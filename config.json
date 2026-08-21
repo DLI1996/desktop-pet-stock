@@ -1,0 +1,13 @@
+{
+  "symbol": "sh000001",
+  "display_name": "上证指数",
+  "rise_threshold": 0.1,
+  "surge_threshold": 3.0,
+  "fall_threshold": -0.1,
+  "refresh_seconds_market_open": 15,
+  "refresh_seconds_market_closed": 60,
+  "audio_cooldown_seconds": 120,
+  "character_height": 200,
+  "always_on_top": true,
+  "muted": false
+}
