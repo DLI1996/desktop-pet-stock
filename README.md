@@ -26,8 +26,14 @@ A desktop pet for macOS that reacts to live China A-share market data. It sits o
 双击 启动桌宠.command
 # 或
 uv venv --python 3.12 .venv
-uv pip install -p .venv/bin/python -r requirements.txt
+uv pip install --require-hashes -p .venv/bin/python -r requirements.txt
 .venv/bin/python app.py
+```
+
+更新依赖时修改 `requirements.in`，再运行：
+
+```bash
+uv pip compile --generate-hashes -o requirements.txt requirements.in
 ```
 
 打包独立 App：双击 `打包桌宠.command`，生成 `dist/牛来行情桌宠.app`。

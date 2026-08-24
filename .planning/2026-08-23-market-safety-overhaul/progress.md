@@ -3,7 +3,7 @@
 ## Session: 2026-08-23
 
 ### Current Status
-- **Phase:** 4 — quote-data validation
+- **Phase:** 5 — reproducible dependency locking
 - **Status:** in_progress
 
 ### Actions Taken
@@ -24,6 +24,9 @@
 - Ran the Iteration 2 two-axis review against `bd8c39c`; both axes reported zero findings.
 - Reproduced unsafe `NaN`, zero, and inconsistent quote data becoming successful results.
 - Added one central quote-data guard at the `StockDataProvider` handoff and verified the targeted quote tests and full offscreen suite.
+- Ran the Iteration 3 two-axis review against `9ab31f3`; both axes reported zero findings.
+- Confirmed the three lower bounds fail a no-range lock check, then generated a 10-package hash-locked `requirements.txt` from `requirements.in`.
+- Verified an offline hash-checked install and the full offscreen suite.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`
@@ -33,6 +36,7 @@
 - `src/quote_provider.py` (exchange-time normalization)
 - `config.json`, `src/pet_window.py`, `tests/test_pet_window_safety.py`, and `README.md` (opt-in auto actions)
 - `src/quote_provider.py` and `tests/test_quote_provider.py` (central quote validation)
+- `requirements.in`, `requirements.txt`, `README.md`, `AGENTS.md`, and `build_app.sh` (reproducible lock workflow)
 
 ## Test Results
 | Test | Expected | Actual | Status |
@@ -48,6 +52,9 @@
 | Iteration 3 unsafe quote repro before fix | Reject malformed quote | `QuoteResult.ok=True` for all three cases | expected red |
 | Quote-provider tests after Iteration 3 | 8 passing | 8 passing | pass |
 | Full suite after Iteration 3 | 15 passing | 15 passing | pass |
+| Iteration 4 lower-bound check before fix | No open-ended constraints | Three lower-bound lines found | expected red |
+| Iteration 4 lock verification | Offline hash-checked install | 10 packages checked | pass |
+| Full suite after Iteration 4 | 15 passing | 15 passing | pass |
 
 ## Error Log
 | Error | Resolution |

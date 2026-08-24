@@ -10,7 +10,7 @@ Use Python 3.12 and a repository-local environment:
 
 ```bash
 uv venv --python 3.12 .venv
-uv pip install -p .venv/bin/python -r requirements.txt
+uv pip install --require-hashes -p .venv/bin/python -r requirements.txt
 .venv/bin/python app.py
 .venv/bin/python -m unittest discover -s tests
 ./build_app.sh

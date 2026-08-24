@@ -21,6 +21,7 @@
 - The lightweight Codex venv does not contain PySide6, so an offscreen UI test requires the repository's documented `.venv`.
 - The offscreen repro showed missing, false, and true configs each launched the browser once. `_auto_action()` ignored configuration entirely; no caller-side opt-in exists.
 - A minimized `StockDataProvider` test showed `NaN`, zero, and inconsistent quote values were all marked successful and could reach the state machine.
+- The previous dependency file held only three lower bounds; compiling a hash-locked `requirements.txt` from a new `requirements.in` resolved ten exact packages and passed an offline hash-checked install.
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -31,6 +32,7 @@
 | Diagnose lock format before choosing one | The repository has requirements files but no `pyproject.toml`; the solution must fit its uv workflow. |
 | Gate `_auto_action()` itself with `enable_auto_actions`, default false | This last shared boundary protects every browser/app/file side effect from every caller. |
 | Validate normalized quote fields in `StockDataProvider.get_quote()` | It is the one shared boundary after either provider and before every state-machine/UI consumer. |
+| Keep direct requirements in `requirements.in`; commit generated `requirements.txt` | Preserves intentional version policy while making normal installation reproducible and hash-checked. |
 
 ## Issues Encountered
 | Issue | Resolution |

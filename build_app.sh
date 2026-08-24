@@ -8,7 +8,7 @@ if [ ! -d .venv ]; then
   echo "首次运行：正在准备环境..."
   command -v uv >/dev/null 2>&1 || { echo "请先安装 uv: brew install uv"; exit 1; }
   uv venv --python 3.12 .venv
-  uv pip install -p .venv/bin/python -r requirements.txt
+  uv pip install --require-hashes -p .venv/bin/python -r requirements.txt
 fi
 
 APP="dist/牛来行情桌宠.app"
