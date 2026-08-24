@@ -32,6 +32,9 @@
 - User extended the safety scope to configuration resilience, direct-provider privacy, exchange closure handling, and the external governance decisions that code alone cannot make.
 - Reproduced malformed user configuration aborting startup, added default/per-field validation at `load_config()`, and passed the full 17-test suite.
 - Review found invalid UTF-8 and non-finite thresholds; added both regression cases, passed 18 tests, and re-review reported zero findings on both axes.
+- Built and ran Phase 8's minimized privacy test twice; both runs prove one direct HTTP call occurs without consent. Caller tracing confirmed the unconditional provider fallback as the root cause.
+- Implemented `enable_http_fallback`, default false, at the provider boundary; wired it from `PetWindow`, documented the privacy behavior, and added explicit-opt-in coverage.
+- Ran the focused quote-provider/config tests, Python compilation, and the full offscreen suite successfully. The Phase 8 commit and two-axis review remain pending.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`
@@ -61,6 +64,8 @@
 | Iteration 4 lock verification | Offline hash-checked install | 10 packages checked | pass |
 | Full suite after Iteration 4 | 15 passing | 15 passing | pass |
 | Final clean-tree verification | Lock check and full suite | 10 packages checked; 15 tests passing | pass |
+| Phase 8 focused tests | Quote provider and config | 13 tests passing | pass |
+| Phase 8 full verification | `compileall` and offscreen suite | Compilation passed; 20 tests passing | pass |
 
 ## Error Log
 | Error | Resolution |
@@ -73,6 +78,7 @@
 | uv managed-Python directory was sandbox-blocked | Redirect uv managed Python storage to a task-scoped writable directory. |
 | Managed Python download failed DNS lookup | Request network access for the resolved uv environment command. |
 | Combined product/planning patch context mismatch | Split the patch and applied each part against current content. |
+| Quote-validation test failed after the privacy default changed | Marked its mocked direct provider as explicitly opted in; it now tests validation rather than fallback permission. |
 
 ## 5-Question Reboot Check
 | Question | Answer |

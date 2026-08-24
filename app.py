@@ -39,6 +39,7 @@ DEFAULT_CONFIG = {
     "always_on_top": True,
     "muted": False,
     "enable_auto_actions": False,
+    "enable_http_fallback": False,
 }
 
 

@@ -4,7 +4,7 @@
 Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, locking dependencies reproducibly, and reducing the remaining operational risks.
 
 ## Next Step
-Diagnose direct HTTP fallback and make it explicit opt-in.
+Review the Phase 8 HTTP-fallback opt-in against its pre-iteration commit, then commit it.
 
 ## Current Phase
 Phase 8
@@ -59,9 +59,10 @@ Phase 8
 - **Status:** complete
 
 ### Phase 8: Iteration 6 — quote-provider privacy
-- [ ] Build a tight red loop proving HTTP fallback cannot send a watched symbol without explicit opt-in.
-- [ ] Diagnose the provider fallback boundary and make direct HTTP explicitly opt-in.
-- [ ] Run targeted and full tests; commit and two-axis review.
+- [x] Build a tight red loop proving HTTP fallback cannot send a watched symbol without explicit opt-in.
+- [x] Diagnose the provider fallback boundary and make direct HTTP explicitly opt-in.
+- [x] Run targeted and full tests.
+- [ ] Commit and two-axis review.
 - **Status:** in_progress
 
 ### Phase 9: Iteration 7 — exchange closure calendar

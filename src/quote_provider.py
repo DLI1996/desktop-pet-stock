@@ -3,7 +3,7 @@
 数据链路（按优先级）：
 1. Skill 桥接文件 quote.json —— 由 a-stock-realtime Skill 的 analyze.py 定时写入
    （千问办公 Skill 无法被桌面进程直接调用，采用文件桥接，见 CONNECTOR.md）。
-2. 直连新浪财经公开行情接口（真实数据，界面如实标注数据源）。
+2. 用户显式启用时，直连新浪财经公开行情接口（真实数据，界面如实标注数据源）。
 
 所有网络请求在后台线程执行，超时 8 秒。
 """
@@ -204,11 +204,13 @@ class StockDataProvider:
     """统一行情接口：get_quote(symbol) -> QuoteResult。
 
     优先 Skill 桥接文件（由千问办公 a-stock-realtime Skill 定时写入 quote.json），
-    过期或不存在时直连新浪接口。两者均为真实数据，来源如实标注。
+    过期或不存在时可选直连新浪接口。两者均为真实数据，来源如实标注。
     """
 
-    def __init__(self, bridge_path: str | None = None):
+    def __init__(self, bridge_path: str | None = None,
+                 enable_http_fallback: bool = False):
         self.bridge = SkillBridgeProvider(bridge_path) if bridge_path else None
+        self.enable_http_fallback = enable_http_fallback
         self.http = SinaHttpProvider()
 
     def get_quote(self, symbol: str) -> QuoteResult:
@@ -221,7 +223,7 @@ class StockDataProvider:
                 source = SkillBridgeProvider.NAME
             except Exception as e:  # noqa: BLE001
                 log.warning("bridge failed: %s", e)
-        if data is None:
+        if data is None and self.enable_http_fallback:
             try:
                 data = self.http.get_quote(symbol)
                 source = SinaHttpProvider.NAME

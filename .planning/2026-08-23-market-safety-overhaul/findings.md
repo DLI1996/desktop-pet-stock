@@ -23,6 +23,8 @@
 - A minimized `StockDataProvider` test showed `NaN`, zero, and inconsistent quote values were all marked successful and could reach the state machine.
 - The previous dependency file held only three lower bounds; compiling a hash-locked `requirements.txt` from a new `requirements.in` resolved ten exact packages and passed an offline hash-checked install.
 - `load_config()` passed malformed JSON through as a startup exception; a default-plus-per-key validation boundary can preserve valid opt-ins while rejecting malformed fields.
+- Phase 8's minimized synchronous test reproducibly shows `StockDataProvider.get_quote()` calls Sina once without consent. The fallback is unconditional when bridge data is absent, the constructor has no policy input, and `PetWindow` is the only production constructor call.
+- `StockDataProvider(enable_http_fallback=False)` is a compact shared policy seam: it blocks the direct adapter for both synchronous and asynchronous requests, while `PetWindow` passes the validated user setting through unchanged.
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -34,6 +36,7 @@
 | Gate `_auto_action()` itself with `enable_auto_actions`, default false | This last shared boundary protects every browser/app/file side effect from every caller. |
 | Validate normalized quote fields in `StockDataProvider.get_quote()` | It is the one shared boundary after either provider and before every state-machine/UI consumer. |
 | Keep direct requirements in `requirements.in`; commit generated `requirements.txt` | Preserves intentional version policy while making normal installation reproducible and hash-checked. |
+| Gate Sina fallback in `StockDataProvider` and pass the config opt-in from `PetWindow` | This shared boundary covers synchronous and asynchronous fetching without changing the HTTP adapter. |
 
 ## Issues Encountered
 | Issue | Resolution |

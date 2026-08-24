@@ -65,7 +65,7 @@ class TestMarketOpen(unittest.TestCase):
 
 class TestQuoteValidation(unittest.TestCase):
     def test_rejects_unsafe_quote_data_before_state_machine(self):
-        provider = StockDataProvider()
+        provider = StockDataProvider(enable_http_fallback=True)
         provider.http = Mock()
         base = {
             "symbol": "sh000001", "name": "上证指数", "price": 100.0,
@@ -82,6 +82,31 @@ class TestQuoteValidation(unittest.TestCase):
 
                 self.assertFalse(result.ok)
                 self.assertEqual(result.error, "行情数据无效")
+
+
+class TestHttpPrivacy(unittest.TestCase):
+    def test_http_fallback_is_disabled_by_default(self):
+        provider = StockDataProvider()
+        provider.http = Mock()
+
+        result = provider.get_quote("sh000001")
+
+        provider.http.get_quote.assert_not_called()
+        self.assertFalse(result.ok)
+
+    def test_http_fallback_requires_explicit_opt_in(self):
+        provider = StockDataProvider(enable_http_fallback=True)
+        provider.http = Mock()
+        provider.http.get_quote.return_value = {
+            "symbol": "sh000001", "name": "上证指数", "price": 100.0,
+            "change": 1.0, "change_percent": 100 / 99,
+            "date": "2026-08-20", "time": "10:00:00",
+        }
+
+        result = provider.get_quote("sh000001")
+
+        provider.http.get_quote.assert_called_once_with("sh000001")
+        self.assertTrue(result.ok)
 
 
 if __name__ == "__main__":

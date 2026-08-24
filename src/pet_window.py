@@ -103,7 +103,10 @@ class PetWindow(QWidget):
             surge=float(config["surge_threshold"]),
             fall=float(config["fall_threshold"]),
         )
-        self.provider = StockDataProvider(str(base_dir / "quote.json"))
+        self.provider = StockDataProvider(
+            str(base_dir / "quote.json"),
+            enable_http_fallback=config.get("enable_http_fallback", False),
+        )
 
         self.state = MarketState.FLAT
         self.last_quote = None          # 最近一次成功行情

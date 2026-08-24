@@ -18,6 +18,7 @@ class TestConfig(unittest.TestCase):
 
         self.assertEqual(config["symbol"], "sh000001")
         self.assertFalse(config["enable_auto_actions"])
+        self.assertFalse(config["enable_http_fallback"])
 
     def test_invalid_values_fall_back_per_field(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -25,6 +26,7 @@ class TestConfig(unittest.TestCase):
             config_path.write_text(json.dumps({
                 "symbol": "not-a-symbol", "rise_threshold": "high",
                 "always_on_top": "yes", "enable_auto_actions": True,
+                "enable_http_fallback": True,
             }), encoding="utf-8")
             with patch.object(app, "BASE", Path(directory)):
                 config = app.load_config()
@@ -33,6 +35,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config["rise_threshold"], 0.1)
         self.assertTrue(config["always_on_top"])
         self.assertTrue(config["enable_auto_actions"])
+        self.assertTrue(config["enable_http_fallback"])
 
     def test_invalid_encoding_and_non_finite_thresholds_use_defaults(self):
         with tempfile.TemporaryDirectory() as directory:

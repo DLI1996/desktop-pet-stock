@@ -40,7 +40,7 @@ uv pip compile --generate-hashes -o requirements.txt requirements.in
 
 ## 行情数据 / Market Data
 
-优先通过千问办公 `a-stock-realtime` Skill 桥接（`tools/quote_bridge.py` 写 quote.json），自动降级新浪财经接口直连。数据源在行情卡上如实标注，非交易时段显示收盘数据。详见 [CONNECTOR.md](CONNECTOR.md)。
+优先通过千问办公 `a-stock-realtime` Skill 桥接（`tools/quote_bridge.py` 写 quote.json）。为避免在桥接不可用时发送你查看的标的，新浪财经直连默认关闭；仅在 `config.json` 中将 `enable_http_fallback` 设为 `true` 时才会启用。数据源在行情卡上如实标注，非交易时段显示收盘数据。详见 [CONNECTOR.md](CONNECTOR.md)。
 
 ## 目录结构 / Structure
 

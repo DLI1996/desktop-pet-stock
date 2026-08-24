@@ -10,5 +10,6 @@
   "character_height": 200,
   "always_on_top": true,
   "muted": false,
-  "enable_auto_actions": false
+  "enable_auto_actions": false,
+  "enable_http_fallback": false
 }
