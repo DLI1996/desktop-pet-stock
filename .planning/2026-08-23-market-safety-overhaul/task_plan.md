@@ -4,10 +4,10 @@
 Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, and locking dependencies reproducibly.
 
 ## Next Step
-Commit Iteration 2, then review `bd8c39c...HEAD` on Standards and Spec axes.
+Review Iteration 3 against `9ab31f3` on Standards and Spec axes.
 
 ## Current Phase
-Phase 3
+Phase 4
 
 ## Phases
 
@@ -29,15 +29,15 @@ Phase 3
 - [x] Build a tight red loop proving browser/app/file actions are disabled by default.
 - [x] Diagnose the current policy boundary and implement an explicit config opt-in.
 - [x] Run targeted and full tests; commit the change.
-- [ ] Review the iteration against its pre-iteration commit on Standards and Spec axes.
-- **Status:** in_progress
+- [x] Review the iteration against its pre-iteration commit on Standards and Spec axes.
+- **Status:** complete
 
 ### Phase 4: Iteration 3 — quote-data validation
-- [ ] Build a tight red loop for non-finite, impossible, or internally inconsistent quote data.
-- [ ] Diagnose each provider boundary and implement centralized validation.
-- [ ] Run targeted and full tests; commit the change.
+- [x] Build a tight red loop for non-finite, impossible, or internally inconsistent quote data.
+- [x] Diagnose each provider boundary and implement centralized validation.
+- [x] Run targeted and full tests; commit the change.
 - [ ] Review the iteration against its pre-iteration commit on Standards and Spec axes.
-- **Status:** pending
+- **Status:** in_progress
 
 ### Phase 5: Iteration 4 — reproducible dependency locking
 - [ ] Build a red-capable reproducibility check for unconstrained dependency resolution.

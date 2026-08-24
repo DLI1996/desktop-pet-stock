@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import re
 import threading
 import urllib.request
@@ -95,6 +96,22 @@ def parse_sina_line(line: str) -> dict | None:
         "date": date,
         "time": tick,
     }
+
+
+def is_valid_quote_data(data: dict) -> bool:
+    """Reject non-finite, impossible, or inconsistent quote fields."""
+    try:
+        price = float(data["price"])
+        change = float(data["change"])
+        change_percent = float(data["change_percent"])
+    except (KeyError, TypeError, ValueError):
+        return False
+    if not all(math.isfinite(value) for value in (price, change, change_percent)):
+        return False
+    prev_close = price - change
+    return (price > 0 and prev_close > 0 and
+            math.isclose(change_percent, change / prev_close * 100,
+                         abs_tol=0.0001))
 
 
 @dataclass
@@ -214,6 +231,9 @@ class StockDataProvider:
                 return result
         if data is None:
             result.error = "接口返回空数据"
+            return result
+        if not is_valid_quote_data(data):
+            result.error = "行情数据无效"
             return result
         ts = f'{data.get("date", "")} {data.get("time", "")}'.strip() or \
             datetime.now().strftime("%Y-%m-%d %H:%M:%S")

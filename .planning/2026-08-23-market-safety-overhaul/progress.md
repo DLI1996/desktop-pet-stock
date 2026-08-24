@@ -3,7 +3,7 @@
 ## Session: 2026-08-23
 
 ### Current Status
-- **Phase:** 3 — opt-in desktop side effects
+- **Phase:** 4 — quote-data validation
 - **Status:** in_progress
 
 ### Actions Taken
@@ -21,6 +21,9 @@
 - Built a minimized offscreen UI test; it reproduced an unwanted Douyin launch in 4 ms twice.
 - Proved `_auto_action()` ignores missing, false, and true configs, then added a default-false gate and explicit-enabled test.
 - Verified the safety test file and full offscreen suite after the fix.
+- Ran the Iteration 2 two-axis review against `bd8c39c`; both axes reported zero findings.
+- Reproduced unsafe `NaN`, zero, and inconsistent quote data becoming successful results.
+- Added one central quote-data guard at the `StockDataProvider` handoff and verified the targeted quote tests and full offscreen suite.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`
@@ -29,6 +32,7 @@
 - `tests/test_quote_provider.py` (uncommitted red test from diagnosis)
 - `src/quote_provider.py` (exchange-time normalization)
 - `config.json`, `src/pet_window.py`, `tests/test_pet_window_safety.py`, and `README.md` (opt-in auto actions)
+- `src/quote_provider.py` and `tests/test_quote_provider.py` (central quote validation)
 
 ## Test Results
 | Test | Expected | Actual | Status |
@@ -41,6 +45,9 @@
 | Iteration 2 default-disabled repro before fix | No browser launch | Browser launch called once | expected red |
 | Iteration 2 safety tests after fix | 2 passing | 2 passing | pass |
 | Full suite after Iteration 2 | 14 passing | 14 passing | pass |
+| Iteration 3 unsafe quote repro before fix | Reject malformed quote | `QuoteResult.ok=True` for all three cases | expected red |
+| Quote-provider tests after Iteration 3 | 8 passing | 8 passing | pass |
+| Full suite after Iteration 3 | 15 passing | 15 passing | pass |
 
 ## Error Log
 | Error | Resolution |

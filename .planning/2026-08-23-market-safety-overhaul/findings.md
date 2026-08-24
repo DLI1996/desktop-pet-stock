@@ -20,6 +20,7 @@
 - Iteration 2 has no pure policy seam: quote-driven effects call `_auto_action()` inside the PySide `PetWindow` class. A config-only test would not exercise the real side-effect path.
 - The lightweight Codex venv does not contain PySide6, so an offscreen UI test requires the repository's documented `.venv`.
 - The offscreen repro showed missing, false, and true configs each launched the browser once. `_auto_action()` ignored configuration entirely; no caller-side opt-in exists.
+- A minimized `StockDataProvider` test showed `NaN`, zero, and inconsistent quote values were all marked successful and could reach the state machine.
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -29,6 +30,7 @@
 | Centralize validation at the canonical quote boundary | Both bridge and HTTP providers must obey the same safety rules. |
 | Diagnose lock format before choosing one | The repository has requirements files but no `pyproject.toml`; the solution must fit its uv workflow. |
 | Gate `_auto_action()` itself with `enable_auto_actions`, default false | This last shared boundary protects every browser/app/file side effect from every caller. |
+| Validate normalized quote fields in `StockDataProvider.get_quote()` | It is the one shared boundary after either provider and before every state-machine/UI consumer. |
 
 ## Issues Encountered
 | Issue | Resolution |

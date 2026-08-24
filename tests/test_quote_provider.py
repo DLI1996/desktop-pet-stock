@@ -3,11 +3,12 @@ import sys
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import Mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.quote_provider import (is_market_open, parse_sina_line,
-                                validate_symbol)
+from src.quote_provider import (StockDataProvider, is_market_open,
+                                parse_sina_line, validate_symbol)
 
 SINA_LINE = ('var hq_str_sh000001="上证指数,3907.2058,3894.4224,3903.7210,'
              '3925.0615,3888.0989,0,0,506633954,1018568353177,0,0,0,0,0,0,'
@@ -60,6 +61,27 @@ class TestMarketOpen(unittest.TestCase):
         # 02:00 UTC is 10:00 in Shanghai: the continuous session is open.
         self.assertTrue(is_market_open(
             datetime(2026, 8, 20, 2, 0, tzinfo=timezone.utc)))
+
+
+class TestQuoteValidation(unittest.TestCase):
+    def test_rejects_unsafe_quote_data_before_state_machine(self):
+        provider = StockDataProvider()
+        provider.http = Mock()
+        base = {
+            "symbol": "sh000001", "name": "上证指数", "price": 100.0,
+            "change": 10.0, "change_percent": 100 / 9,
+            "date": "2026-08-20", "time": "10:00:00",
+        }
+        for field, value in (("price", float("nan")), ("price", 0.0),
+                             ("change_percent", 5.0)):
+            with self.subTest(field=field, value=value):
+                data = {**base, field: value}
+                provider.http.get_quote.return_value = data
+
+                result = provider.get_quote("sh000001")
+
+                self.assertFalse(result.ok)
+                self.assertEqual(result.error, "行情数据无效")
 
 
 if __name__ == "__main__":
