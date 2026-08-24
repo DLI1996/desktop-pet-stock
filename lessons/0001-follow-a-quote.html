@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>第 1 课——追踪一条行情</title>
+  <link rel="stylesheet" href="../assets/teaching.css">
+</head>
+<body>
+<main>
+  <h1>第 1 课：追踪一条行情</h1>
+  <p class="lede">本课目标：判断一项交易所变更究竟只是菜单修改，还是需要调整整体架构。</p>
+
+  <h2>行情流经的五个阶段</h2>
+  <div class="flow">
+    <div class="node">选择标的<br><code>config/menu</code></div>
+    <div class="arrow">→</div>
+    <div class="node">获取行情<br><code>providers</code></div>
+    <div class="arrow">→</div>
+    <div class="node">统一格式<br><code>QuoteResult</code></div>
+  </div>
+  <div class="flow">
+    <div class="node">判断状态<br><code>StateMachine</code></div>
+    <div class="arrow">→</div>
+    <div class="node">触发反应<br><code>PetWindow</code></div>
+  </div>
+
+  <p><code>PetWindow._fetch_quote()</code> 将当前标的传给 <code>StockDataProvider</code>。数据层先尝试读取仍在有效期内、且代码匹配的 <code>quote.json</code>；失败后再请求新浪接口。两条路径最终都会把数据转换为统一的 <code>QuoteResult</code>。窗口把 <code>change_percent</code> 送入状态机；首次数据立即生效，之后则需要连续两次得到相同的新状态才会切换。最终状态决定动画、音频，并可能触发桌面操作。</p>
+
+  <div class="callout"><strong>关键边界：</strong><code>QuoteResult</code> 是可复用的统一契约。增加交易所时，通常应该添加新的行情提供器适配器，并引入交易所感知的代码与交易日历模型，而不是把各种条件散落在界面代码里。</div>
+
+  <h2>为什么只增加预设项行不通</h2>
+  <p>直接把 <code>("NASDAQ", "AAPL")</code> 加进 <code>INDEX_PRESETS</code> 不会成功：现有校验只接受六位数字；新浪 URL 使用中国市场前缀；解析器依赖新浪的逗号字段和 GBK 编码；开市判断还使用中国大陆交易时段和本机时区。</p>
+
+  <h2>安全检查</h2>
+  <ul>
+    <li><strong>现有优点：</strong>HTTP 请求有八秒超时；行情获取在后台线程执行；Qt 信号将结果送回界面线程；子进程使用参数列表，没有经过 shell。</li>
+    <li><strong>需要关注：</strong>交易日历没有处理节假日和交易所时区，可能错误标注“实时”。</li>
+    <li><strong>需要关注：</strong>行情进入 <code>SURGE</code> 或 <code>FALL</code> 状态时，程序可能打开抖音、启动 WPS，或者创建 <code>~/Documents/牛来上班记录.txt</code>。面向更多用户发布前，应把这些能力改为明确的主动选择。</li>
+    <li><strong>需要关注：</strong>行情数据经过了结构校验，但没有合理范围校验；异常涨跌幅仍可能触发副作用。</li>
+  </ul>
+
+  <h2>回忆练习</h2>
+  <p>你准备增加美股代码 <code>AAPL</code>。正确的第一项设计工作是什么？</p>
+  <ol>
+    <li>只增加一个预设选项</li>
+    <li>增加一个行情适配器</li>
+    <li>修改一个动画状态</li>
+  </ol>
+  <button onclick="answer(1)">A</button>
+  <button onclick="answer(2)">B</button>
+  <button onclick="answer(3)">C</button>
+  <p id="feedback" aria-live="polite"></p>
+  <script>
+    function answer(n) {
+      document.getElementById('feedback').textContent = n === 2
+        ? '正确。先从行情提供器契约入手，再建模代码和交易日历规则。'
+        : '还不对。重新追踪行情路径，找到能够隔离不同数据源的边界。';
+    }
+  </script>
+
+  <h2>一手资料</h2>
+  <p>阅读 Qt 官方的 <a href="https://doc.qt.io/qtforpython-6/overviews/qtdoc-threads-qobject.html">线程与 QObject 文档</a>，理解后台线程向界面发送信号的重要性。实现开市状态前，还应查阅目标交易所的官方交易日历。完整清单见<a href="../reference/market-architecture.html">行情架构速查表</a>。</p>
+
+  <footer>任何地方不清楚，都可以继续问你的 AI 老师。下一课：选定一个目标交易所，设计它的行情适配器和交易日历测试。</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Market Architecture Reference</title><link rel="stylesheet" href="../assets/teaching.css"></head><body><main>
+<h1>Market architecture reference</h1><p class="lede">The smallest map for changing exchange support without missing a hard-coded assumption.</p>
+<table><thead><tr><th>Concern</th><th>Current owner</th><th>Mainland-China assumption</th></tr></thead><tbody>
+<tr><td>Startup defaults</td><td><code>config.json</code></td><td><code>sh000001</code>, China-oriented thresholds</td></tr>
+<tr><td>Menu choices</td><td><code>src/pet_window.py::INDEX_PRESETS</code></td><td>Shanghai/Shenzhen indices and one Shenzhen stock</td></tr>
+<tr><td>Symbol grammar</td><td><code>src/quote_provider.py::validate_symbol</code></td><td>Six digits; <code>sh</code>/<code>sz</code>/<code>bj</code> prefixes</td></tr>
+<tr><td>Market calendar</td><td><code>src/quote_provider.py::is_market_open</code></td><td>Local computer time, weekdays, two fixed sessions, no holidays</td></tr>
+<tr><td>Data retrieval</td><td><code>SkillBridgeProvider</code>, then <code>SinaHttpProvider</code></td><td>Sina response shape and GBK encoding</td></tr>
+<tr><td>Canonical result</td><td><code>QuoteResult</code></td><td>Mostly portable; best extension seam</td></tr>
+<tr><td>Visual reaction</td><td><code>StateMachine</code> → <code>PetWindow</code></td><td>Percentage thresholds; red-up/green-down convention</td></tr>
+</tbody></table>
+<h2>Safe exchange checklist</h2><ol><li>Choose an authoritative/licensed provider and document its contract.</li><li>Define an exchange-qualified symbol, never infer ambiguous bare codes globally.</li><li>Parse provider data into <code>QuoteResult</code> behind an adapter.</li><li>Use exchange timezone, sessions, holidays, and delayed-data semantics.</li><li>Add fixture-based parser, symbol, calendar, fallback, and stale-data tests.</li><li>Label source and realtime/delayed/closed status accurately in the UI.</li><li>Make external browser/app/file actions opt-in before broader distribution.</li></ol>
+<h2>Risk boundaries</h2><ul><li><strong>Data integrity:</strong> malformed or stale quotes can produce a wrong pet state.</li><li><strong>Desktop side effects:</strong> <code>SURGE</code> opens a website; <code>FALL</code> launches WPS or writes a document.</li><li><strong>Privacy:</strong> provider requests expose the watched symbol and IP address to the provider.</li><li><strong>Supply chain:</strong> dependencies are lower-bounded, not locked or hash-pinned.</li><li><strong>Licensing:</strong> bundled character art/audio needs permission for redistribution or commercial use.</li></ul>
+<footer><a href="../lessons/0001-follow-a-quote.html">Lesson 1: Follow a quote</a></footer>
+</main></body></html>
