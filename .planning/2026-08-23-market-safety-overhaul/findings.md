@@ -39,6 +39,12 @@
 |-------|------------|
 | GitHub CLI token is expired | Fork creation used the authenticated GitHub browser; Git pushes use SSH. |
 
+## Residual Risks
+- Direct provider requests still disclose the selected symbol and client IP; resolving that needs a provider or proxy decision.
+- Sina's endpoint remains an undocumented public interface; provider-contract assurance needs an authoritative source or agreement.
+- Market hours exclude China-specific holidays and ad-hoc closures; adding a maintained trading-calendar source is a separate product decision.
+- Character artwork and audio still require a licensing decision before redistribution or commercial use.
+
 ## Resources
 - `AGENTS.md`
 - `docs/agents/domain.md`

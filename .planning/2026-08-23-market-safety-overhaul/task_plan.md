@@ -4,10 +4,10 @@
 Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, and locking dependencies reproducibly.
 
 ## Next Step
-Review Iteration 4 against `155e68c` on Standards and Spec axes.
+Market-safety overhaul complete.
 
 ## Current Phase
-Phase 5
+Complete
 
 ## Phases
 
@@ -43,14 +43,14 @@ Phase 5
 - [x] Build a red-capable reproducibility check for unconstrained dependency resolution.
 - [x] Diagnose the existing `requirements.txt` workflow and select a uv-compatible lock artifact.
 - [x] Generate and verify the lock workflow; commit the change.
-- [ ] Review the iteration against its pre-iteration commit on Standards and Spec axes.
-- **Status:** in_progress
+- [x] Review the iteration against its pre-iteration commit on Standards and Spec axes.
+- **Status:** complete
 
 ### Phase 6: Final verification and delivery
-- [ ] Run the full suite and repository checks from a clean working tree.
-- [ ] Confirm all review findings are resolved or explicitly accepted.
-- [ ] Summarize remaining privacy, provider-contract, holiday-calendar, and asset-license risks.
-- **Status:** pending
+- [x] Run the full suite and repository checks from a clean working tree.
+- [x] Confirm all review findings are resolved or explicitly accepted.
+- [x] Summarize remaining privacy, provider-contract, holiday-calendar, and asset-license risks.
+- **Status:** complete
 
 ## Iteration Contract
 
@@ -79,3 +79,4 @@ Every implementation phase uses the same gate:
 | `uv venv` then could not write its managed-Python directory | Also set task-scoped `UV_PYTHON_INSTALL_DIR=/private/tmp/desktop-pet-stock-uv-python`. |
 | Managed Python download failed in the restricted network sandbox | Retry the same resolved command with approved network access. |
 | Combined product/planning patch missed one context line | Split product changes from planning updates and reapplied against current text. |
+| Iteration 4 review found launcher hash enforcement missing | Added `--require-hashes` to both Finder launcher install paths, re-verified, and re-reviewed. |

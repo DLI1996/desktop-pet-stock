@@ -3,8 +3,8 @@
 ## Session: 2026-08-23
 
 ### Current Status
-- **Phase:** 5 — reproducible dependency locking
-- **Status:** in_progress
+- **Phase:** 6 — final verification and delivery
+- **Status:** complete
 
 ### Actions Taken
 - Created isolated plan `2026-08-23-market-safety-overhaul` and made it active.
@@ -27,6 +27,8 @@
 - Ran the Iteration 3 two-axis review against `9ab31f3`; both axes reported zero findings.
 - Confirmed the three lower bounds fail a no-range lock check, then generated a 10-package hash-locked `requirements.txt` from `requirements.in`.
 - Verified an offline hash-checked install and the full offscreen suite.
+- Re-reviewed Iteration 4 after adding hash enforcement to both Finder launcher scripts; Standards and Spec both reported zero findings.
+- Ran final clean-tree verification: exact-pin check, offline hash-checked install, `git diff --check`, and the full offscreen suite.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`
@@ -55,6 +57,7 @@
 | Iteration 4 lower-bound check before fix | No open-ended constraints | Three lower-bound lines found | expected red |
 | Iteration 4 lock verification | Offline hash-checked install | 10 packages checked | pass |
 | Full suite after Iteration 4 | 15 passing | 15 passing | pass |
+| Final clean-tree verification | Lock check and full suite | 10 packages checked; 15 tests passing | pass |
 
 ## Error Log
 | Error | Resolution |
