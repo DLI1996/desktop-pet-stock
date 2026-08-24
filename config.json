@@ -9,5 +9,6 @@
   "audio_cooldown_seconds": 120,
   "character_height": 200,
   "always_on_top": true,
-  "muted": false
+  "muted": false,
+  "enable_auto_actions": false
 }

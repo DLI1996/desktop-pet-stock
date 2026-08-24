@@ -335,6 +335,8 @@ class PetWindow(QWidget):
     def _auto_action(self, state: MarketState, delay: float = 0.0):
         """涨了打开抖音摸鱼；跌了打开 WPS 开始上班。
         先让台词音频播完（delay 秒），再触发。带冷却防重复。"""
+        if not self.cfg.get("enable_auto_actions", False):
+            return
         import time as _time
         kind = None
         if state == MarketState.SURGE:

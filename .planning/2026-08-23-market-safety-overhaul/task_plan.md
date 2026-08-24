@@ -4,10 +4,10 @@
 Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, and locking dependencies reproducibly.
 
 ## Next Step
-Commit Iteration 1, then review `efa2d73...HEAD` on Standards and Spec axes.
+Commit Iteration 2, then review `bd8c39c...HEAD` on Standards and Spec axes.
 
 ## Current Phase
-Phase 2
+Phase 3
 
 ## Phases
 
@@ -22,15 +22,15 @@ Phase 2
 - [x] Diagnose with `TestMarketOpen.test_uses_exchange_timezone_for_aware_datetime`.
 - [x] Implement exchange-time normalization test-first.
 - [x] Run targeted and full tests; commit the change.
-- [ ] Review the iteration against its pre-iteration commit on Standards and Spec axes.
-- **Status:** in_progress
+- [x] Review the iteration against its pre-iteration commit on Standards and Spec axes.
+- **Status:** complete
 
 ### Phase 3: Iteration 2 — opt-in desktop side effects
-- [ ] Build a tight red loop proving browser/app/file actions are disabled by default.
-- [ ] Diagnose the current policy boundary and implement an explicit config opt-in.
-- [ ] Run targeted and full tests; commit the change.
+- [x] Build a tight red loop proving browser/app/file actions are disabled by default.
+- [x] Diagnose the current policy boundary and implement an explicit config opt-in.
+- [x] Run targeted and full tests; commit the change.
 - [ ] Review the iteration against its pre-iteration commit on Standards and Spec axes.
-- **Status:** pending
+- **Status:** in_progress
 
 ### Phase 4: Iteration 3 — quote-data validation
 - [ ] Build a tight red loop for non-finite, impossible, or internally inconsistent quote data.
@@ -74,3 +74,8 @@ Every implementation phase uses the same gate:
 | Repository `.venv` is absent | Use `/Users/donaldli/.codex/.venv/bin/python` for stdlib-only tests; never install into system Python. |
 | Patch replacement rejected delete+add of the same files | Replaced planning files with separate delete and add operations. |
 | `git diff --cached --check` found trailing blank lines | Removed the blank lines before retrying the commit. |
+| PySide6 is unavailable in the lightweight test venv | Prepare the documented repository `.venv` and use an offscreen UI harness for the real path. |
+| `uv venv` could not write its default cache | Retry with task-scoped `UV_CACHE_DIR=/private/tmp/desktop-pet-stock-uv-cache`. |
+| `uv venv` then could not write its managed-Python directory | Also set task-scoped `UV_PYTHON_INSTALL_DIR=/private/tmp/desktop-pet-stock-uv-python`. |
+| Managed Python download failed in the restricted network sandbox | Retry the same resolved command with approved network access. |
+| Combined product/planning patch missed one context line | Split product changes from planning updates and reapplied against current text. |

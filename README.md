@@ -17,7 +17,7 @@ A desktop pet for macOS that reacts to live China A-share market data. It sits o
 | 单击 | 跳跃/压扁/抖动小动效 |
 | 右键 | 刷新行情 / 更换标的（六大指数+个股）/ 置顶 / 静音 / 演示模式 |
 
-**涨跌自动动作**：狂涨（≥+3%）台词播完后自动打开抖音；下跌（≤-0.1%）播完后打开 WPS 开始上班（各 30 分钟冷却）。普通上涨只庆祝不开网页。
+**涨跌自动动作**：默认关闭。若在 `config.json` 中将 `enable_auto_actions` 设为 `true`，狂涨（≥+3%）台词播完后会打开抖音，下跌（≤-0.1%）播完后会打开 WPS 开始上班（各 30 分钟冷却）。普通上涨只庆祝不开网页。
 
 ## 快速开始 / Quick Start
 
