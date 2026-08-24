@@ -4,10 +4,10 @@
 Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, locking dependencies reproducibly, and reducing the remaining operational risks.
 
 ## Next Step
-Review Iteration 5 against `c5e61e4` on Standards and Spec axes.
+Diagnose direct HTTP fallback and make it explicit opt-in.
 
 ## Current Phase
-Phase 7
+Phase 8
 
 ## Phases
 
@@ -56,13 +56,13 @@ Phase 7
 - [x] Build a tight red loop for malformed or wrong-typed user configuration.
 - [x] Diagnose the configuration boundary and safely recover to defaults.
 - [x] Run targeted and full tests; commit and two-axis review.
-- **Status:** in_progress
+- **Status:** complete
 
 ### Phase 8: Iteration 6 — quote-provider privacy
 - [ ] Build a tight red loop proving HTTP fallback cannot send a watched symbol without explicit opt-in.
 - [ ] Diagnose the provider fallback boundary and make direct HTTP explicitly opt-in.
 - [ ] Run targeted and full tests; commit and two-axis review.
-- **Status:** pending
+- **Status:** in_progress
 
 ### Phase 9: Iteration 7 — exchange closure calendar
 - [ ] Obtain an authoritative exchange holiday/closure source for the supported period.
