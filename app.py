@@ -20,9 +20,25 @@ from PySide6.QtNetwork import QLocalServer, QLocalSocket  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from src.pet_window import PetWindow  # noqa: E402
+from src.quote_provider import validate_symbol  # noqa: E402
 from src.state_machine import MarketState  # noqa: E402
 
 INSTANCE_KEY = "niulai-pet-singleton"
+
+DEFAULT_CONFIG = {
+    "symbol": "sh000001",
+    "display_name": "上证指数",
+    "rise_threshold": 0.1,
+    "surge_threshold": 3.0,
+    "fall_threshold": -0.1,
+    "refresh_seconds_market_open": 15,
+    "refresh_seconds_market_closed": 60,
+    "audio_cooldown_seconds": 120,
+    "character_height": 200,
+    "always_on_top": True,
+    "muted": False,
+    "enable_auto_actions": False,
+}
 
 
 def setup_logging():
@@ -38,8 +54,22 @@ def setup_logging():
 
 
 def load_config() -> dict:
-    with open(BASE / "config.json", "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(BASE / "config.json", "r", encoding="utf-8") as f:
+            loaded = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return DEFAULT_CONFIG.copy()
+    if not isinstance(loaded, dict):
+        return DEFAULT_CONFIG.copy()
+    config = DEFAULT_CONFIG.copy()
+    for key, default in DEFAULT_CONFIG.items():
+        if type(loaded.get(key, default)) is type(default):
+            config[key] = loaded.get(key, default)
+    config["symbol"] = validate_symbol(config["symbol"]) or DEFAULT_CONFIG["symbol"]
+    if not config["fall_threshold"] < config["rise_threshold"] <= config["surge_threshold"]:
+        config.update({key: DEFAULT_CONFIG[key] for key in (
+            "rise_threshold", "surge_threshold", "fall_threshold")})
+    return config
 
 
 def already_running() -> bool:

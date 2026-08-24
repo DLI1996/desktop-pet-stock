@@ -3,8 +3,8 @@
 ## Session: 2026-08-23
 
 ### Current Status
-- **Phase:** 6 — final verification and delivery
-- **Status:** complete
+- **Phase:** 7 — configuration resilience
+- **Status:** in_progress
 
 ### Actions Taken
 - Created isolated plan `2026-08-23-market-safety-overhaul` and made it active.
@@ -29,6 +29,8 @@
 - Verified an offline hash-checked install and the full offscreen suite.
 - Re-reviewed Iteration 4 after adding hash enforcement to both Finder launcher scripts; Standards and Spec both reported zero findings.
 - Ran final clean-tree verification: exact-pin check, offline hash-checked install, `git diff --check`, and the full offscreen suite.
+- User extended the safety scope to configuration resilience, direct-provider privacy, exchange closure handling, and the external governance decisions that code alone cannot make.
+- Reproduced malformed user configuration aborting startup, added default/per-field validation at `load_config()`, and passed the full 17-test suite.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`

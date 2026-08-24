@@ -1,13 +1,13 @@
 # Task Plan: Market Safety Overhaul
 
 ## Goal
-Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, and locking dependencies reproducibly.
+Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, locking dependencies reproducibly, and reducing the remaining operational risks.
 
 ## Next Step
-Market-safety overhaul complete.
+Review Iteration 5 against `c5e61e4` on Standards and Spec axes.
 
 ## Current Phase
-Complete
+Phase 7
 
 ## Phases
 
@@ -51,6 +51,30 @@ Complete
 - [x] Confirm all review findings are resolved or explicitly accepted.
 - [x] Summarize remaining privacy, provider-contract, holiday-calendar, and asset-license risks.
 - **Status:** complete
+
+### Phase 7: Iteration 5 — configuration resilience
+- [x] Build a tight red loop for malformed or wrong-typed user configuration.
+- [x] Diagnose the configuration boundary and safely recover to defaults.
+- [x] Run targeted and full tests; commit and two-axis review.
+- **Status:** in_progress
+
+### Phase 8: Iteration 6 — quote-provider privacy
+- [ ] Build a tight red loop proving HTTP fallback cannot send a watched symbol without explicit opt-in.
+- [ ] Diagnose the provider fallback boundary and make direct HTTP explicitly opt-in.
+- [ ] Run targeted and full tests; commit and two-axis review.
+- **Status:** pending
+
+### Phase 9: Iteration 7 — exchange closure calendar
+- [ ] Obtain an authoritative exchange holiday/closure source for the supported period.
+- [ ] Build a deterministic red loop for a published exchange closure date.
+- [ ] Implement the smallest maintainable calendar mechanism, then test, commit, and review.
+- **Status:** pending
+
+### Phase 10: External governance decisions
+- [ ] Record the provider-contract decision required for any direct Sina use.
+- [ ] Record the asset-license decision required before redistribution or commercial use.
+- [ ] Record the signing/distribution policy if the app is distributed outside local development.
+- **Status:** pending (requires provider, rights-holder, or release-owner authority)
 
 ## Iteration Contract
 

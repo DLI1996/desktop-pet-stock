@@ -22,6 +22,7 @@
 - The offscreen repro showed missing, false, and true configs each launched the browser once. `_auto_action()` ignored configuration entirely; no caller-side opt-in exists.
 - A minimized `StockDataProvider` test showed `NaN`, zero, and inconsistent quote values were all marked successful and could reach the state machine.
 - The previous dependency file held only three lower bounds; compiling a hash-locked `requirements.txt` from a new `requirements.in` resolved ten exact packages and passed an offline hash-checked install.
+- `load_config()` passed malformed JSON through as a startup exception; a default-plus-per-key validation boundary can preserve valid opt-ins while rejecting malformed fields.
 
 ## Technical Decisions
 | Decision | Rationale |
