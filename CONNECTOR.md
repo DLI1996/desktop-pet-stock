@@ -61,19 +61,20 @@ uv run /Users/mac/.qwenworkcn/skills/a-stock-realtime/scripts/analyze.py 600519 
 }
 ```
 
-3. 桌宠每次轮询时优先读取 `quote.json`（`SkillBridgeProvider`，超过 120 秒视为过期自动降级）。
+3. 桌宠每次轮询时优先读取 `quote.json`（`SkillBridgeProvider`，超过 120 秒视为过期）。
 
 桥接实测（600519）：✅ 成功写入并被 `SkillBridgeProvider` 正确读取。
 
-## 备用数据源（已启用）
+## 备用数据源（默认关闭）
 
 **名称**：`SinaHttpProvider`（新浪财经公开行情接口 `hq.sinajs.cn`，延迟约 3 秒）
 
-- 触发条件：`quote.json` 不存在 / 过期 / symbol 不匹配，或桥接读取异常
+- 启用方式：在 `config.json` 中显式设置 `"enable_http_fallback": true`
+- 触发条件：已启用，且 `quote.json` 不存在 / 过期 / symbol 不匹配，或桥接读取异常
 - 请求头：`Referer: https://finance.sina.com.cn`
 - 接口实测（2026-08-20 21:28）：`sh000001` 返回上证指数 3903.7210 +0.24%
 - 界面数据源标注：`新浪财经接口(hq.sinajs.cn)`（如实标注，不冒充 Skill）
-- 默认标的 `sh000001`（上证指数）实际走此通道
+- 隐私说明：启用后会向新浪发送所查看的标的，并暴露客户端 IP
 
 ## 统一接口
 
@@ -103,4 +104,4 @@ uv run /Users/mac/.qwenworkcn/skills/a-stock-realtime/scripts/analyze.py 600519 
 | 正常获取（收盘后） | ✅ 返回收盘数据，标注非实时 |
 | 无效代码（sz999999） | ✅ 返回「接口返回空数据」，UI 显示连接走丢 |
 | 模拟断网 | ✅ 保留旧数据，不崩溃 |
-| 桥接文件过期/不匹配 | ✅ 自动降级新浪直连 |
+| 桥接文件过期/不匹配 | 默认不联网；显式启用后降级新浪直连 |

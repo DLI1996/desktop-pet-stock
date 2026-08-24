@@ -208,7 +208,7 @@ class StockDataProvider:
     """
 
     def __init__(self, bridge_path: str | None = None,
-                 enable_http_fallback: bool = False):
+                 enable_http_fallback: bool = False) -> None:
         self.bridge = SkillBridgeProvider(bridge_path) if bridge_path else None
         self.enable_http_fallback = enable_http_fallback
         self.http = SinaHttpProvider()
