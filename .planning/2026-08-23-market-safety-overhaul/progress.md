@@ -3,7 +3,7 @@
 ## Session: 2026-08-23
 
 ### Current Status
-- **Phase:** 8 — quote-provider privacy
+- **Phase:** 9 — exchange closure calendar
 - **Status:** in_progress
 
 ### Actions Taken
@@ -35,6 +35,8 @@
 - Built and ran Phase 8's minimized privacy test twice; both runs prove one direct HTTP call occurs without consent. Caller tracing confirmed the unconditional provider fallback as the root cause.
 - Implemented `enable_http_fallback`, default false, at the provider boundary; wired it from `PetWindow`, documented the privacy behavior, and added explicit-opt-in coverage.
 - Ran the focused quote-provider/config tests, Python compilation, and the full offscreen suite successfully. The Phase 8 commit and two-axis review remain pending.
+- Committed Phase 8 as `7541cf1`; review found one missing return annotation and stale connector documentation.
+- Corrected both findings in `e9c90e2`, including a second stale fallback claim; re-review reported zero Standards and zero Spec findings, with 20 tests passing.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`
