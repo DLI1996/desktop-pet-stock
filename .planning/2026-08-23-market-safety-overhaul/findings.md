@@ -10,6 +10,7 @@
 ## Research Findings
 - `is_market_open()` reads `datetime.time()` and `weekday()` without exchange-time conversion.
 - A minimized test using `2026-08-20T02:00:00+00:00` fails: Shanghai local time is Thursday 10:00, but the function returns closed.
+- A targeted probe confirmed the input remained at `02:00`; converting with `ZoneInfo("Asia/Shanghai")` produced Thursday `10:00`. A naive Thursday `10:00` already passes, falsifying the session-range and weekday hypotheses.
 - `PetWindow._auto_action()` can open Douyin, launch WPS, or append to `~/Documents/牛来上班记录.txt` after quote-driven state transitions.
 - `SkillBridgeProvider` and `SinaHttpProvider` normalize data structurally but apply no centralized finite/range/consistency policy.
 - `requirements.txt` uses lower bounds only: `PySide6>=6.6`, `Pillow>=10.0`, and `requests>=2.28`.

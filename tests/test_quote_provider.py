@@ -1,7 +1,7 @@
 """行情解析、代码校验、交易时段测试。"""
 import sys
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -55,6 +55,11 @@ class TestMarketOpen(unittest.TestCase):
         self.assertTrue(is_market_open(datetime(2026, 8, 20, 14, 0)))
         self.assertFalse(is_market_open(datetime(2026, 8, 20, 15, 30)))
         self.assertFalse(is_market_open(datetime(2026, 8, 20, 9, 5)))
+
+    def test_uses_exchange_timezone_for_aware_datetime(self):
+        # 02:00 UTC is 10:00 in Shanghai: the continuous session is open.
+        self.assertTrue(is_market_open(
+            datetime(2026, 8, 20, 2, 0, tzinfo=timezone.utc)))
 
 
 if __name__ == "__main__":

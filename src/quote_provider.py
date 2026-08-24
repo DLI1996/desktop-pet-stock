@@ -16,6 +16,7 @@ import threading
 import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, time as dtime
+from zoneinfo import ZoneInfo
 
 log = logging.getLogger("pet.quote")
 
@@ -25,6 +26,8 @@ MARKET_SESSIONS = [
     (dtime(9, 15), dtime(11, 30)),
     (dtime(13, 0), dtime(15, 0)),
 ]
+
+EXCHANGE_TIMEZONE = ZoneInfo("Asia/Shanghai")
 
 BRIDGE_MAX_AGE = 120  # quote.json 超过该秒数视为过期
 HTTP_TIMEOUT = 8
@@ -47,7 +50,10 @@ def validate_symbol(symbol: str) -> str | None:
 
 
 def is_market_open(now: datetime | None = None) -> bool:
-    now = now or datetime.now()
+    if now is None:
+        now = datetime.now(EXCHANGE_TIMEZONE)
+    elif now.tzinfo is not None:
+        now = now.astimezone(EXCHANGE_TIMEZONE)
     if now.weekday() >= 5:  # 周末
         return False
     t = now.time()

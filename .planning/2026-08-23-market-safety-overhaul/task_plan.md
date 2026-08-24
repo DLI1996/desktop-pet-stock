@@ -4,10 +4,10 @@
 Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, and locking dependencies reproducibly.
 
 ## Next Step
-Commit this approved plan, then complete Iteration 1 using the existing red timezone test.
+Commit Iteration 1, then review `efa2d73...HEAD` on Standards and Spec axes.
 
 ## Current Phase
-Phase 1
+Phase 2
 
 ## Phases
 
@@ -15,15 +15,15 @@ Phase 1
 - [x] Capture the four implementation items and their order.
 - [x] Record the existing test baseline: 11 tests pass before the timezone regression test.
 - [x] Preserve the minimized red timezone test as the first feedback loop.
-- [ ] Commit planning artifacts without committing the failing test.
-- **Status:** in_progress
+- [x] Commit planning artifacts without committing the failing test.
+- **Status:** complete
 
 ### Phase 2: Iteration 1 — exchange timezone correctness
-- [ ] Diagnose with `TestMarketOpen.test_uses_exchange_timezone_for_aware_datetime`.
-- [ ] Implement exchange-time normalization test-first.
-- [ ] Run targeted and full tests; commit the change.
+- [x] Diagnose with `TestMarketOpen.test_uses_exchange_timezone_for_aware_datetime`.
+- [x] Implement exchange-time normalization test-first.
+- [x] Run targeted and full tests; commit the change.
 - [ ] Review the iteration against its pre-iteration commit on Standards and Spec axes.
-- **Status:** pending
+- **Status:** in_progress
 
 ### Phase 3: Iteration 2 — opt-in desktop side effects
 - [ ] Build a tight red loop proving browser/app/file actions are disabled by default.
