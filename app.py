@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import math
 import sys
 from pathlib import Path
 
@@ -54,10 +55,11 @@ def setup_logging():
 
 
 def load_config() -> dict:
+    """Load user settings, retaining only valid values and safe defaults."""
     try:
         with open(BASE / "config.json", "r", encoding="utf-8") as f:
             loaded = json.load(f)
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return DEFAULT_CONFIG.copy()
     if not isinstance(loaded, dict):
         return DEFAULT_CONFIG.copy()
@@ -66,7 +68,10 @@ def load_config() -> dict:
         if type(loaded.get(key, default)) is type(default):
             config[key] = loaded.get(key, default)
     config["symbol"] = validate_symbol(config["symbol"]) or DEFAULT_CONFIG["symbol"]
-    if not config["fall_threshold"] < config["rise_threshold"] <= config["surge_threshold"]:
+    thresholds = (config["fall_threshold"], config["rise_threshold"],
+                  config["surge_threshold"])
+    if (not all(math.isfinite(value) for value in thresholds) or
+            not config["fall_threshold"] < config["rise_threshold"] <= config["surge_threshold"]):
         config.update({key: DEFAULT_CONFIG[key] for key in (
             "rise_threshold", "surge_threshold", "fall_threshold")})
     return config
