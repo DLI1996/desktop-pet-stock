@@ -3,8 +3,8 @@
 ## Session: 2026-08-23
 
 ### Current Status
-- **Phase:** 9 — exchange closure calendar
-- **Status:** in_progress
+- **Phase:** 9 — VIX desktop interaction smoke test
+- **Status:** complete
 
 ### Actions Taken
 - Created isolated plan `2026-08-23-market-safety-overhaul` and made it active.
@@ -37,6 +37,14 @@
 - Ran the focused quote-provider/config tests, Python compilation, and the full offscreen suite successfully. The Phase 8 commit and two-axis review remain pending.
 - Committed Phase 8 as `7541cf1`; review found one missing return annotation and stale connector documentation.
 - Corrected both findings in `e9c90e2`, including a second stale fallback claim; re-review reported zero Standards and zero Spec findings, with 20 tests passing.
+- Recovered this worktree from stale Phase 3 commit `9ab31f3` to Phase 9 baseline `41d7db5`; no tracked local changes were overwritten.
+- Re-scoped Phase 9 to the delegated VIX smoke slice and selected the existing hover timer, `QMenu`, `QPainter`, and `urllib.request` seams.
+- Added a deterministic three-row Cboe-format CSV fixture and captured the expected red result: no metrics menu appeared after the existing 350 ms hover delay.
+- Added a one-action `VIX` hover menu and a painted detail view with the latest close, observation date, Cboe source, recent-close line, loading state, and failure state.
+- Verified the focused smoke check, all 21 offscreen tests, Python compilation, and `git diff --check`.
+- Addressed Phase 9 review: moved Cboe fetching/parsing to `vix_provider.py`, added deterministic parser edge-case tests, and precisely ignored unrelated `.agents/` and `skills-lock.json` without deleting them.
+- Verified the review fixes: 2 parser tests and 3 combined VIX tests passed; all 23 offscreen tests, `compileall`, and `git diff --check` passed.
+- Re-review found the tracked ignore policy out of scope; reverted only those two `.gitignore` lines and moved them to this checkout's local Git exclude while preserving both files.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`
@@ -47,6 +55,8 @@
 - `config.json`, `src/pet_window.py`, `tests/test_pet_window_safety.py`, and `README.md` (opt-in auto actions)
 - `src/quote_provider.py` and `tests/test_quote_provider.py` (central quote validation)
 - `requirements.in`, `requirements.txt`, `README.md`, `AGENTS.md`, and `build_app.sh` (reproducible lock workflow)
+- `src/vix_view.py`, `src/pet_window.py`, `tests/test_vix_smoke.py`, and `tests/fixtures/vix_history.csv` (Phase 9 VIX smoke slice)
+- `src/vix_provider.py` and `tests/test_vix_provider.py` (Phase 9 review fixes)
 
 ## Test Results
 | Test | Expected | Actual | Status |
@@ -68,6 +78,11 @@
 | Final clean-tree verification | Lock check and full suite | 10 packages checked; 15 tests passing | pass |
 | Phase 8 focused tests | Quote provider and config | 13 tests passing | pass |
 | Phase 8 full verification | `compileall` and offscreen suite | Compilation passed; 20 tests passing | pass |
+| Phase 9 VIX smoke before implementation | Hover exposes one `VIX` action | Zero visible menus after 400 ms | expected red |
+| Phase 9 focused smoke after implementation | Menu, loading, ready data, and failure state | 1 passing | pass |
+| Phase 9 full verification | Offscreen suite, compilation, diff check | 21 passing; compilation and diff check passed | pass |
+| Phase 9 review-fix focused verification | Provider parsing and VIX smoke | 3 passing | pass |
+| Phase 9 review-fix full verification | Offscreen suite, compilation, diff check | 23 passing; compilation and diff check passed | pass |
 
 ## Error Log
 | Error | Resolution |
@@ -81,12 +96,15 @@
 | Managed Python download failed DNS lookup | Request network access for the resolved uv environment command. |
 | Combined product/planning patch context mismatch | Split the patch and applied each part against current content. |
 | Quote-validation test failed after the privacy default changed | Marked its mocked direct provider as explicitly opted in; it now tests validation rather than fallback permission. |
+| Detached worktree switch could not write Git's external worktree metadata | Re-ran the resolved `git switch --detach 41d7db5...` with approved access. |
+| Focused VIX smoke command found no worktree-local `.venv` | Reused the main worktree's existing locked Python 3.12 environment with PySide6 6.11.2. |
+| Offscreen `QTest.qWait()` prevented the Python loader thread from acquiring the GIL | Waited on the deterministic loader event, then processed queued Qt events. |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 3: opt-in desktop side effects. |
-| Where am I going? | Four sequential safety iterations, then final verification. |
-| What's the goal? | Correct timezone behavior, opt-in side effects, validated quotes, locked dependencies. |
+| Where am I? | Phase 9 VIX desktop interaction is complete. |
+| Where am I going? | Phase 10 requires external governance decisions. |
+| What's the goal? | Keep market behavior safe while adding the narrowly scoped VIX desktop smoke slice. |
 | What have I learned? | See `findings.md`. |
 | What have I done? | Created the plan and preserved the first red loop. |

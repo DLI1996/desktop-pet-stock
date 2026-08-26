@@ -6,6 +6,7 @@
 - Validate quote data before it reaches the state machine or triggers effects.
 - Replace open-ended dependency resolution with a reproducible uv-compatible lock workflow.
 - For each item: diagnose, implement test-first, commit, and run a two-axis code review.
+- Phase 9 is now limited to a VIX desktop-interaction smoke slice: one hover menu item and one Cboe-history detail view, with no refresh, registry, persistence, dashboard, fallback, or chart dependency.
 
 ## Research Findings
 - `is_market_open()` reads `datetime.time()` and `weekday()` without exchange-time conversion.
@@ -25,6 +26,12 @@
 - `load_config()` passed malformed JSON through as a startup exception; a default-plus-per-key validation boundary can preserve valid opt-ins while rejecting malformed fields.
 - Phase 8's minimized synchronous test reproducibly shows `StockDataProvider.get_quote()` calls Sina once without consent. The fallback is unconditional when bridge data is absent, the constructor has no policy input, and `PetWindow` is the only production constructor call.
 - `StockDataProvider(enable_http_fallback=False)` is a compact shared policy seam: it blocks the direct adapter for both synchronous and asynchronous requests, while `PetWindow` passes the validated user setting through unchanged.
+- `PetWindow` already owns a single-shot 350 ms hover timer and uses `QMenu` and `QPainter`; these are the narrow existing seams for the VIX slice.
+- The repository already uses `urllib.request`, so the Cboe CSV fetch needs no new HTTP or chart dependency.
+- The first offscreen VIX smoke run failed after 400 ms with zero visible menus, proving the missing hover interaction before implementation.
+- `QTest.qWait()` holds the Python GIL in this offscreen setup; deterministic async checks wait on the loader event, then process queued Qt events.
+- Phase 9 review found Cboe access/parsing mixed into the QWidget module, missing parser edge-case coverage, and unrelated local tooling visible as untracked changes.
+- Re-review clarified that repository-wide ignore policy is outside the VIX slice; worktree-local Git exclusion preserves the files without a tracked `.gitignore` change.
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -37,6 +44,9 @@
 | Validate normalized quote fields in `StockDataProvider.get_quote()` | It is the one shared boundary after either provider and before every state-machine/UI consumer. |
 | Keep direct requirements in `requirements.in`; commit generated `requirements.txt` | Preserves intentional version policy while making normal installation reproducible and hash-checked. |
 | Gate Sina fallback in `StockDataProvider` and pass the config opt-in from `PetWindow` | This shared boundary covers synchronous and asynchronous fetching without changing the HTTP adapter. |
+| Replace the prior Phase 9 calendar task with the delegated VIX smoke slice | The current task explicitly narrows Phase 9 to this UI behavior and defers the calendar work. |
+| Keep only the most recent 60 valid daily closes | This bounds painting work and matches the requested recent-history view without persistence or refresh machinery. |
+| Keep Cboe fetching/parsing in `vix_provider.py` | Preserves the repository's existing UI/data separation with one small provider module. |
 
 ## Issues Encountered
 | Issue | Resolution |

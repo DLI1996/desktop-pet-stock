@@ -18,6 +18,8 @@ from .audio_controller import AudioController
 from .bubble import BubbleController
 from .quote_provider import StockDataProvider, is_market_open, validate_symbol
 from .state_machine import MarketState, StateMachine
+from .vix_provider import fetch_vix_csv
+from .vix_view import VixDetailView
 
 log = logging.getLogger("pet.window")
 
@@ -138,7 +140,7 @@ class PetWindow(QWidget):
         self.hover_timer = QTimer(self)
         self.hover_timer.setSingleShot(True)
         self.hover_timer.setInterval(350)
-        self.hover_timer.timeout.connect(lambda: self._set_card(True))
+        self.hover_timer.timeout.connect(self._on_hover_timeout)
 
         self.hide_timer = QTimer(self)
         self.hide_timer.setSingleShot(True)
@@ -656,6 +658,22 @@ class PetWindow(QWidget):
     def _set_card(self, v: bool):
         self.card_visible = v
         self.update()
+
+    def _on_hover_timeout(self):
+        self._set_card(True)
+        self._show_metrics_menu()
+
+    def _show_metrics_menu(self):
+        menu = QMenu(self)
+        action = menu.addAction("VIX")
+        action.triggered.connect(self._open_vix_detail)
+        self.metrics_menu = menu
+        menu.popup(self.mapToGlobal(self.rect().center()))
+
+    def _open_vix_detail(self):
+        loader = getattr(self, "vix_loader", fetch_vix_csv)
+        self.vix_detail = VixDetailView(loader, self)
+        self.vix_detail.show()
 
     def enterEvent(self, event):
         self.hovering = True   # 悬停：进入行情形态视图 + 显示红/绿卡

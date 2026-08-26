@@ -4,7 +4,7 @@
 Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, locking dependencies reproducibly, and reducing the remaining operational risks.
 
 ## Next Step
-Obtain an authoritative exchange closure calendar source for Phase 9.
+Await product-owner decisions for Phase 10 external governance items.
 
 ## Current Phase
 Phase 9
@@ -65,11 +65,12 @@ Phase 9
 - [x] Commit and two-axis review.
 - **Status:** complete
 
-### Phase 9: Iteration 7 — exchange closure calendar
-- [ ] Obtain an authoritative exchange holiday/closure source for the supported period.
-- [ ] Build a deterministic red loop for a published exchange closure date.
-- [ ] Implement the smallest maintainable calendar mechanism, then test, commit, and review.
-- **Status:** in_progress
+### Phase 9: Iteration 7 — VIX desktop interaction smoke test
+- [x] Build a deterministic offscreen red loop for the hover menu and VIX detail states.
+- [x] Add the one-item metrics menu and Cboe daily-history detail view.
+- [x] Run the focused smoke check and full suite, preserving source/date/loading/failure behavior.
+- [x] Resolve review findings by separating the provider, covering parser edge cases, and excluding unrelated tooling files.
+- **Status:** complete
 
 ### Phase 10: External governance decisions
 - [ ] Record the provider-contract decision required for any direct Sina use.
@@ -105,3 +106,5 @@ Every implementation phase uses the same gate:
 | Managed Python download failed in the restricted network sandbox | Retry the same resolved command with approved network access. |
 | Combined product/planning patch missed one context line | Split product changes from planning updates and reapplied against current text. |
 | Iteration 4 review found launcher hash enforcement missing | Added `--require-hashes` to both Finder launcher install paths, re-verified, and re-reviewed. |
+| Phase 9 worktree initially opened at stale Phase 3 commit | Switched the detached worktree to existing Phase 9 commit `41d7db5`. |
+| Phase 9 worktree switch was sandbox-blocked by Git metadata permissions | Re-ran the resolved detached switch with approved access. |
