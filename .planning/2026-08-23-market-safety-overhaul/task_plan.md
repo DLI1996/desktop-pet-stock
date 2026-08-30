@@ -4,10 +4,10 @@
 Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, locking dependencies reproducibly, and reducing the remaining operational risks.
 
 ## Next Step
-Await product-owner decisions for Phase 10 external governance items.
+Implement frontier issue #2 first to produce the runnable US/VIX demo; issue #5 is independently ready, while issues #3 and #4 remain blocked by #2.
 
 ## Current Phase
-Phase 9
+Phase 11
 
 ## Phases
 
@@ -77,6 +77,33 @@ Phase 9
 - [ ] Record the asset-license decision required before redistribution or commercial use.
 - [ ] Record the signing/distribution policy if the app is distributed outside local development.
 - **Status:** pending (requires provider, rights-holder, or release-owner authority)
+
+### Phase 11: China / US market switch
+- [x] Run `grill-with-docs` to settle the switch behavior and boundaries, then synthesize the result with `to-spec`.
+- [x] Remove the automatic VIX hover menu so the original 350 ms quote-card interaction is visible again.
+- [x] Test the original China quote connection and inspect how its data maps to the existing card before deciding the remaining menu behavior.
+- [x] Replace the original mini quote card and native hover `QMenu` with one compact macOS-style hover market panel; use the supplied image as visual direction, not as a requirement for its extra metrics or Level 2 features.
+- [x] Start the packaged app automatically at macOS login, retain single-instance behavior, and initialize each app session in the US Market view without changing the configured Watched instrument.
+- [x] Use `中国 / 美国` switch buttons in the market panel rather than a mixed list.
+- [x] Lay out each list row with its name left-aligned and current value right-aligned; preload the current view's summaries together behind a list-wide wireframe, without constructing detail charts.
+- [x] Keep the active market row visibly highlighted, including after returning from its detail view.
+- [ ] Reserve a `＋ 添加指标` footer affordance; its behavior is deferred.
+- [x] Replace the list with detail inside the same market panel and use `返回`; do not open a separate OS window.
+- [x] Activating a China row selects it as the watched instrument and opens detail; VIX opens detail without changing the watched instrument.
+- [x] Treat future US equity indices such as S&P 500 and Nasdaq as watched instruments: selecting one replaces the current China instrument and drives the existing market reaction.
+- [ ] Preserve the existing `FLAT / RISE / SURGE / FALL` market-reaction logic and its animation/effect behavior when the watched China instrument changes; panel/detail state must not introduce a second reaction model.
+- [x] Keep VIX out of the animation state machine: it never changes or overrides `FLAT / RISE / SURGE / FALL` and only shows one independent high-volatility alert overlay.
+- [x] When the VIX alert is active, keep a small badge visible beside the pet even while the market panel is closed; clicking it opens VIX detail directly.
+- [x] Keep the panel open while the pointer is over either the pet or panel; after leaving both, close it after about 200ms. On the next hover, reopen the list while preserving the last Market view and Active row.
+- [ ] Validate the proposed alert rule (`VIX close >= 30`; clear after two closes `< 25`) with a deterministic historical frequency replay before implementation.
+- [x] In detail, show latest value/change, high, low, open, previous close, data source, and an inspectable line where pointing reveals the exact time and value.
+- [x] Load a row's historical Detail series only after activation; show its own loading wireframe, reveal the hovered point after 350ms, and dismiss the point tooltip about 200ms after leaving.
+- [ ] After the frontend contract is confirmed, research which backend sources can supply the required China and VIX historical granularity without weakening the existing privacy/provider constraints.
+- [ ] Fix the observed `爆拉！` regression test-first: choosing another index must exit the forced surge/demo state and show the selected index normally.
+- [x] Publish the synthesized Chinese specification as GitHub issue #1 with `ready-for-agent`.
+- [x] Publish four approved tracer-bullet tickets from issue #1: #2 US/VIX demo, #3 China view, #4 VIX alert, and #5 macOS login launch.
+- [x] Run `implement` for the resulting ticket(s), including TDD and two-axis code review.
+- **Status:** in_progress
 
 ## Iteration Contract
 

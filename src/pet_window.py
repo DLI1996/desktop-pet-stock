@@ -16,10 +16,9 @@ from PySide6.QtWidgets import QInputDialog, QMenu, QWidget
 from .animation_controller import AnimationController
 from .audio_controller import AudioController
 from .bubble import BubbleController
+from .market_panel import MarketPanel
 from .quote_provider import StockDataProvider, is_market_open, validate_symbol
 from .state_machine import MarketState, StateMachine
-from .vix_provider import fetch_vix_csv
-from .vix_view import VixDetailView
 
 log = logging.getLogger("pet.window")
 
@@ -144,8 +143,11 @@ class PetWindow(QWidget):
 
         self.hide_timer = QTimer(self)
         self.hide_timer.setSingleShot(True)
-        self.hide_timer.setInterval(500)
-        self.hide_timer.timeout.connect(lambda: self._set_card(False))
+        self.hide_timer.setInterval(200)
+        self.hide_timer.timeout.connect(self._close_market_panel)
+        self.market_panel = MarketPanel(parent=self)
+        self.market_panel.entered.connect(self.hide_timer.stop)
+        self.market_panel.left.connect(self.hide_timer.start)
 
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self._fetch_quote)
@@ -438,7 +440,8 @@ class PetWindow(QWidget):
         bubble_on = self.bubble.visible_text() is not None
         market_view = self._market_view or self.demo_state is not None
         key = (self.width(), self.height(), self.char_h,
-               self.card_visible, bubble_on, market_view)
+               self.card_visible, bubble_on, market_view,
+               self.market_panel.isVisible())
         if key == getattr(self, "_mask_key", None):
             return
         self._mask_key = key
@@ -450,6 +453,8 @@ class PetWindow(QWidget):
         if self.card_visible:
             cr = self._card_rect().toRect().adjusted(-8, -8, 8, 8)
             r = r.united(QRegion(cr))
+        if self.market_panel.isVisible():
+            r = r.united(QRegion(self.market_panel.geometry()))
         if bubble_on:  # 行情形态下气泡常驻
             r = r.united(QRegion(int(self.width() / 2 - 160),
                                  int(foot_y - ch_area) - 110, 320, 110))
@@ -465,7 +470,7 @@ class PetWindow(QWidget):
 
         foot = QPointF(w / 2, h - BOTTOM_MARGIN)
         # 行情卡先画：红涨绿跌半透明卡垫在人物左侧（仅悬停/演示时显示）
-        if self.card_visible:
+        if self.card_visible and not self.market_panel.isVisible():
             q_card = self._demo_quote() if self.demo_state else self._current_quote()
             self._draw_card(p, q_card)
 
@@ -659,21 +664,19 @@ class PetWindow(QWidget):
         self.card_visible = v
         self.update()
 
+    def _close_market_panel(self):
+        self.market_panel.close_panel()
+        self._set_card(False)
+        self._mask_key = None
+        self.update()
+
     def _on_hover_timeout(self):
         self._set_card(True)
-        self._show_metrics_menu()
-
-    def _show_metrics_menu(self):
-        menu = QMenu(self)
-        action = menu.addAction("VIX")
-        action.triggered.connect(self._open_vix_detail)
-        self.metrics_menu = menu
-        menu.popup(self.mapToGlobal(self.rect().center()))
-
-    def _open_vix_detail(self):
-        loader = getattr(self, "vix_loader", fetch_vix_csv)
-        self.vix_detail = VixDetailView(loader, self)
-        self.vix_detail.show()
+        self.market_panel.loader = getattr(self, "vix_loader", self.market_panel.loader)
+        self.market_panel.move(8, max(20, (self.height() - self.market_panel.height()) // 2))
+        self.market_panel.open()
+        self._mask_key = None
+        self.update()
 
     def enterEvent(self, event):
         self.hovering = True   # 悬停：进入行情形态视图 + 显示红/绿卡
@@ -698,6 +701,7 @@ class PetWindow(QWidget):
             self._market_view = False
             self.bubble.clear()
             self._set_card(False)
+            self._close_market_panel()
             self.demo_state = None  # 双击也退出演示模式
             self.anim.trigger_click()  # 小动效反馈
             self.update()

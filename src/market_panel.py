@@ -1,0 +1,167 @@
+"""Compact in-window market list and lazy detail panel."""
+from __future__ import annotations
+
+import threading
+from typing import Callable
+
+from PySide6.QtCore import QRectF, Signal, Qt
+from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath
+from PySide6.QtWidgets import QWidget
+
+from .vix_provider import VixSummary, fetch_vix_csv, parse_vix_summary
+from .vix_view import VixDetailView
+
+
+class MarketPanel(QWidget):
+    """A single US list/detail surface shown beside the pet."""
+
+    entered = Signal()
+    left = Signal()
+
+    def __init__(self, loader: Callable[[], bytes] = fetch_vix_csv,
+                 parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.loader = loader
+        self.market_view = "US"
+        self.screen = "list"
+        self.rows = ["VIX"]
+        self.active_row: str | None = None
+        self.list_status = "loading"
+        self.error = ""
+        self.summary: VixSummary | None = None
+        self.detail: VixDetailView | None = None
+        self._raw: bytes | None = None
+        self._summary_done = threading.Event()
+        self.summary_ready.connect(self._summary_result_ready)
+        self.setFixedSize(360, 350)
+        self.setMouseTracking(True)
+
+    def open(self) -> None:
+        self.screen = "list"
+        if self.detail:
+            self.detail.hide()
+        self.show()
+        if self.summary is None and not self._summary_done.is_set():
+            self._load_summary()
+        self.update()
+
+    def close_panel(self) -> None:
+        self.hide()
+
+    def _load_summary(self) -> None:
+        self.list_status = "loading"
+        self._summary_done.clear()
+
+        def run() -> None:
+            try:
+                raw = self.loader()
+                result = ("ready", (raw, parse_vix_summary(raw)))
+            except Exception as error:  # noqa: BLE001
+                result = ("failure", str(error))
+            self.summary_ready.emit(result)
+            self._summary_done.set()
+
+        threading.Thread(target=run, daemon=True).start()
+
+    summary_ready = Signal(object)
+
+    def _summary_result_ready(self, result: tuple[str, object]) -> None:
+        self.list_status = result[0]
+        if self.list_status == "ready":
+            self._raw, self.summary = result[1]
+        else:
+            self.error = str(result[1])
+        self.update()
+
+    def paintEvent(self, event) -> None:
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.fillRect(self.rect(), QColor("#161A22"))
+        painter.setPen(QColor("#F4F5F7"))
+        painter.setFont(QFont("PingFang SC", 14, QFont.Weight.Bold))
+        painter.drawText(18, 28, "Market")
+        painter.setFont(QFont("PingFang SC", 10, QFont.Weight.Bold))
+        painter.setPen(QColor("#8F98A8"))
+        painter.drawText(180, 27, "中国")
+        painter.setPen(QColor("#FFB454"))
+        painter.drawText(236, 27, "美国")
+        if self.screen == "detail":
+            self._paint_detail_header(painter)
+            return
+
+        painter.setFont(QFont("PingFang SC", 10))
+        painter.setPen(QColor("#8F98A8"))
+        painter.drawText(18, 50, "美国市场")
+        if self.list_status == "loading":
+            for y in (78, 104):
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(QColor("#2B313D"))
+                painter.drawRoundedRect(QRectF(18, y, 324, 18), 5, 5)
+        elif self.list_status == "failure":
+            painter.setPen(QColor("#D27C78"))
+            painter.drawText(18, 92, "VIX 摘要暂不可用")
+            painter.setPen(QColor("#8F98A8"))
+            painter.drawText(QRectF(18, 104, 324, 50),
+                             Qt.AlignmentFlag.AlignTop | Qt.TextFlag.TextWordWrap,
+                             self.error)
+        else:
+            active = self.active_row == "VIX"
+            row = QRectF(12, 64, 336, 58)
+            path = QPainterPath()
+            path.addRoundedRect(row, 9, 9)
+            painter.fillPath(path, QColor("#2C3442" if active else "#202631"))
+            painter.setPen(QColor("#F4F5F7"))
+            painter.setFont(QFont("PingFang SC", 12, QFont.Weight.Bold))
+            painter.drawText(28, 99, "VIX")
+            painter.setPen(QColor("#FFB454"))
+            painter.drawText(262, 99, f"{self.summary.value:.2f}")
+            painter.setFont(QFont("PingFang SC", 9))
+            painter.setPen(QColor("#9BA4B2"))
+            painter.drawText(28, 114, self.summary.date)
+        painter.setPen(QColor("#697384"))
+        painter.setFont(QFont("PingFang SC", 10))
+        painter.drawText(18, 322, "＋ 添加指标")
+
+    def _paint_detail_header(self, painter: QPainter) -> None:
+        painter.setPen(QColor("#F4F5F7"))
+        painter.setFont(QFont("PingFang SC", 11, QFont.Weight.Bold))
+        painter.drawText(18, 29, "‹ 返回")
+
+    def mousePressEvent(self, event) -> None:
+        pos = event.position()
+        if self.screen == "detail":
+            if pos.y() < 45:
+                self.back_to_list()
+            return
+        if self.list_status == "ready" and QRectF(12, 64, 336, 58).contains(pos):
+            self.open_vix_detail()
+        super().mousePressEvent(event)
+
+    def open_vix_detail(self) -> None:
+        self.active_row = "VIX"
+        self.screen = "detail"
+        if self.detail is None:
+            loader = (lambda: self._raw) if self._raw is not None else self.loader
+            self.detail = VixDetailView(loader, self)
+            self.detail.setGeometry(0, 42, self.width(), self.height() - 42)
+            self.detail.entered.connect(self.entered)
+        else:
+            self.detail.show()
+            if self.detail.status == "failure":
+                self.detail.load()
+        self.detail.show()
+        self.update()
+
+    def back_to_list(self) -> None:
+        self.screen = "list"
+        if self.detail:
+            self.detail.hide()
+        self.update()
+
+    def enterEvent(self, event) -> None:
+        self.entered.emit()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event) -> None:
+        self.left.emit()
+        super().leaveEvent(event)

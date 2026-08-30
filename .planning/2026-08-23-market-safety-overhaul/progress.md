@@ -3,8 +3,8 @@
 ## Session: 2026-08-23
 
 ### Current Status
-- **Phase:** 9 — VIX desktop interaction smoke test
-- **Status:** complete
+- **Phase:** 11 — China / US Market panel specification
+- **Status:** specification published; implementation pending
 
 ### Actions Taken
 - Created isolated plan `2026-08-23-market-safety-overhaul` and made it active.
@@ -45,6 +45,32 @@
 - Addressed Phase 9 review: moved Cboe fetching/parsing to `vix_provider.py`, added deterministic parser edge-case tests, and precisely ignored unrelated `.agents/` and `skills-lock.json` without deleting them.
 - Verified the review fixes: 2 parser tests and 3 combined VIX tests passed; all 23 offscreen tests, `compileall`, and `git diff --check` passed.
 - Re-review found the tracked ignore policy out of scope; reverted only those two `.gitignore` lines and moved them to this checkout's local Git exclude while preserving both files.
+- Began a China/US market-switch extension, then withdrew it before completion per user direction; no switch changes are retained.
+- Added a persistent Phase 11 todo: `grill-with-docs` → optional `to-spec`/`to-tickets` for multi-session work → `implement` with TDD and code review.
+- Started `grill-with-docs` for Phase 11, combining the grilling decision tree with inline domain-modeling documentation.
+- Resolved the first Phase 11 design branch from the live UI: the market choice filters the watched-instrument catalog; VIX remains an independent metric. Created `CONTEXT.md` with the canonical terms.
+- Grill round decision: chose native nested China and US market catalogs instead of a stateful switch.
+- Grill round decision: limited the first US catalog to VIX only.
+- Paused the remaining grill questions for a quick product spike, replaced the VIX hover smoke assertion with the original behavior contract, and captured the expected red result: the quote card appeared but one `VIX` menu was still visible.
+- Removed only the automatic VIX hover wiring; the existing 350 ms timer now shows the original quote card without opening any menu. Focused smoke and all 23 offscreen tests pass.
+- Clarified that `zn` meant the app's original China market quotes, reproduced “行情走丢了” twice with the production provider, and isolated the cause to a missing bridge file plus the default-disabled HTTP fallback.
+- Verified an explicit Sina opt-in returns `sh000001` (`3912.52`, `+0.59%`, closed-market data), then launched the app with that opt-in for this session only; the repository's safe default remains unchanged.
+- User confirmed several original China-market smoke paths work and reported one deferred bug: selecting another index after `爆拉！` leaves the forced surge/demo state active. Added an unchecked test-first plan item; no diagnosis or product code change was made.
+- User supplied a macOS-style hover-panel reference and explicitly allowed replacing the original quote-card/menu UI. Recorded the reference as visual direction while keeping its unrequested Level 2 and multi-metric features out of scope.
+- Grill decision: the replacement market panel uses `中国 / 美国` switch buttons and never mixes both markets in one list.
+- Revised the interactive frontend mockup with persistent row highlighting, a deferred `＋ 添加指标` affordance, same-panel list/detail navigation, OHLC/previous-close/source fields, and an inspectable time/value line. No backend assumptions or product code changes were made.
+- User confirmed same-panel detail navigation and required the original market reaction behavior to remain authoritative. Updated the mockup so China rows demonstrate `FLAT / RISE / SURGE / FALL` changes while VIX leaves the pet's watched China instrument and reaction unchanged.
+- Confirmed future US equity indices replace the current watched instrument and drive the existing reaction model. Submitted the approved VIX PANIC brief once through Perplexity's standard Search mode, preserved the result URL, and recorded its fixed-threshold recommendation as research rather than an adopted product rule.
+- Confirmed a VIX treatment may temporarily override the visible animation while the watched instrument keeps updating underneath. Ran a second Perplexity ordinary Search on what VIX should truthfully affect; it recommended a volatility/uncertainty overlay rather than a fifth directional state. Preserved the result URL.
+- Discovered Perplexity's composer had retained Deep Research despite the requested normal search, explicitly switched the visible mode to Search before submitting, and updated the local ask-perplexity skill through a Luna medium subagent so ordinary Search is now the documented default.
+- Grill decision: VIX will not change or override the pet animation. Reduced the proposed behavior to one independent high-volatility alert overlay; threshold validation remains a later deterministic data check.
+- Grill decision: while active, the VIX high-volatility alert remains as a small badge beside the pet even with the market panel closed, and clicking it opens VIX detail directly.
+- Grill decision: the panel stays open while the pointer is over either the pet or panel, then closes about 200ms after leaving both.
+- Ran `to-spec` without another interview, using the existing offscreen `PetWindow` interaction seam plus deterministic provider fixtures. Published the full Chinese specification as `DLI1996/desktop-pet-stock#1` with `ready-for-agent`; enabling Issues and creating the missing canonical label were required on the origin fork.
+- Updated issue #1 with the confirmed startup and loading contract: launch at macOS login, default each app session to the US Market view, align row names/values left/right, preload all summaries behind a list-wide wireframe, defer Detail series until activation, and use 350ms/200ms chart-tooltip intent timing.
+- Ran `to-tickets`, confirmed granularity and blocking edges one question at a time, and published issues #2–#5 with `ready-for-agent`. The first implementation target is #2 for a runnable US/VIX demo; #5 is independently ready, while #3 and #4 are blocked only by #2.
+- Implemented Issue #2 test-first: added deterministic VIX summary parsing, a US-default in-window market panel, lazy same-panel VIX detail, OHLC/source/date rendering, and 350ms/200ms tooltip/close intent.
+- Verified the issue #2 focused interaction/parser tests and the full offscreen suite; no VIX loader runs during list rendering until the panel opens, and list rendering never constructs detail series.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`
@@ -83,6 +109,11 @@
 | Phase 9 full verification | Offscreen suite, compilation, diff check | 21 passing; compilation and diff check passed | pass |
 | Phase 9 review-fix focused verification | Provider parsing and VIX smoke | 3 passing | pass |
 | Phase 9 review-fix full verification | Offscreen suite, compilation, diff check | 23 passing; compilation and diff check passed | pass |
+| Phase 11 original-hover regression before fix | Quote card visible; no menu | Card visible; one VIX menu visible | expected red |
+| Phase 11 original-hover regression after fix | Quote card visible; no menu | 1 passing | pass |
+| Phase 11 full verification after hover fix | Offscreen suite | 23 passing | pass |
+| Phase 11 China quote repro | Default production provider returns a quote | `接口返回空数据` twice | expected red |
+| Phase 11 explicit China quote connection | Opted-in provider returns `sh000001` | `3912.52`, `+0.59%`, Sina source | pass |
 
 ## Error Log
 | Error | Resolution |
@@ -99,12 +130,13 @@
 | Detached worktree switch could not write Git's external worktree metadata | Re-ran the resolved `git switch --detach 41d7db5...` with approved access. |
 | Focused VIX smoke command found no worktree-local `.venv` | Reused the main worktree's existing locked Python 3.12 environment with PySide6 6.11.2. |
 | Offscreen `QTest.qWait()` prevented the Python loader thread from acquiring the GIL | Waited on the deterministic loader event, then processed queued Qt events. |
+| China quote trial relaunch exited immediately | Found and stopped the prior confirmed app PID holding the single-instance lock, then relaunched successfully. |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 9 VIX desktop interaction is complete. |
-| Where am I going? | Phase 10 requires external governance decisions. |
-| What's the goal? | Keep market behavior safe while adding the narrowly scoped VIX desktop smoke slice. |
+| Where am I? | Phase 11 specification is published as GitHub issue #1. |
+| Where am I going? | Implement issue #2 for the first demo, then work the remaining ready frontier while Phase 10 governance decisions remain separate. |
+| What's the goal? | Add the China / US Market panel and VIX alert without changing the existing watched-instrument reaction model. |
 | What have I learned? | See `findings.md`. |
 | What have I done? | Created the plan and preserved the first red loop. |

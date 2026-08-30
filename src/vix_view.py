@@ -1,32 +1,52 @@
-"""Cboe VIX daily-history detail view."""
+"""Cboe VIX daily-history detail content for the market panel."""
 from __future__ import annotations
 
 import threading
 from typing import Callable
 
-from PySide6.QtCore import QPointF, QRectF, Qt, Signal
+from PySide6.QtCore import QPointF, QRectF, QTimer, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen, QPolygonF
 from PySide6.QtWidgets import QWidget
 
-from .vix_provider import VIX_SOURCE, fetch_vix_csv, parse_vix_csv
+from .vix_provider import VIX_SOURCE, VixSummary, fetch_vix_csv, parse_vix_csv, parse_vix_summary
 
 
 class VixDetailView(QWidget):
+    """Load and paint VIX detail only after the row is activated."""
+
     loaded = Signal(object)
+    entered = Signal()
 
     def __init__(self, loader: Callable[[], bytes] = fetch_vix_csv,
                  parent: QWidget | None = None) -> None:
-        super().__init__(parent, Qt.WindowType.Tool)
+        super().__init__(parent)
         self.loader = loader
         self.status = "loading"
         self.points: list[tuple[str, float]] = []
+        self.summary: VixSummary | None = None
         self.latest_value: float | None = None
+        self.latest_change = 0.0
+        self.latest_open = 0.0
+        self.latest_high = 0.0
+        self.latest_low = 0.0
+        self.previous_close = 0.0
         self.observation_date = ""
         self.source = VIX_SOURCE
         self.error = ""
+        self.tooltip_text = ""
+        self.tooltip_visible = False
+        self._hover_index: int | None = None
         self._load_done = threading.Event()
-        self.setWindowTitle("VIX 详情")
-        self.setMinimumSize(540, 320)
+        self._hover_timer = QTimer(self)
+        self._hover_timer.setSingleShot(True)
+        self._hover_timer.setInterval(350)
+        self._hover_timer.timeout.connect(self._show_hover_tooltip)
+        self._tooltip_hide_timer = QTimer(self)
+        self._tooltip_hide_timer.setSingleShot(True)
+        self._tooltip_hide_timer.setInterval(200)
+        self._tooltip_hide_timer.timeout.connect(self._hide_tooltip)
+        self.setMinimumSize(300, 280)
+        self.setMouseTracking(True)
         self.loaded.connect(self._on_loaded)
         self.load()
 
@@ -38,7 +58,8 @@ class VixDetailView(QWidget):
 
         def run() -> None:
             try:
-                result = ("ready", parse_vix_csv(self.loader()))
+                raw = self.loader()
+                result = ("ready", (parse_vix_csv(raw), parse_vix_summary(raw)))
             except Exception as error:  # noqa: BLE001
                 result = ("failure", str(error))
             try:
@@ -53,10 +74,62 @@ class VixDetailView(QWidget):
     def _on_loaded(self, result: tuple[str, object]) -> None:
         self.status = result[0]
         if self.status == "ready":
-            self.points = result[1]
-            self.observation_date, self.latest_value = self.points[-1]
+            self.points, self.summary = result[1]
+            self.observation_date = self.summary.date
+            self.latest_value = self.summary.value
+            self.latest_change = self.summary.change
+            self.latest_open = self.summary.open
+            self.latest_high = self.summary.high
+            self.latest_low = self.summary.low
+            self.previous_close = self.summary.previous_close
         else:
             self.error = str(result[1])
+        self.update()
+
+    def _chart_rect(self) -> QRectF:
+        return QRectF(16, 172, self.width() - 32, self.height() - 190)
+
+    def _index_at(self, pos: QPointF) -> int | None:
+        chart = self._chart_rect()
+        if not chart.contains(pos) or len(self.points) < 2:
+            return None
+        ratio = (pos.x() - chart.left()) / chart.width()
+        return max(0, min(len(self.points) - 1,
+                          round(ratio * (len(self.points) - 1))))
+
+    def mouseMoveEvent(self, event) -> None:
+        index = self._index_at(event.position()) if self.status == "ready" else None
+        self._tooltip_hide_timer.stop()
+        if index is None:
+            self._hover_timer.stop()
+            self._hover_index = None
+            self._tooltip_hide_timer.start()
+        elif index != self._hover_index:
+            self._hover_index = index
+            self.tooltip_visible = False
+            self._hover_timer.start()
+        super().mouseMoveEvent(event)
+
+    def leaveEvent(self, event) -> None:
+        self._hover_timer.stop()
+        self._hover_index = None
+        self._tooltip_hide_timer.start()
+        super().leaveEvent(event)
+
+    def enterEvent(self, event) -> None:
+        self.entered.emit()
+        super().enterEvent(event)
+
+    def _show_hover_tooltip(self) -> None:
+        if self._hover_index is not None and self.status == "ready":
+            date, value = self.points[self._hover_index]
+            self.tooltip_text = f"{date}  {value:.2f}"
+            self.tooltip_visible = True
+            self.update()
+
+    def _hide_tooltip(self) -> None:
+        self.tooltip_visible = False
+        self.tooltip_text = ""
         self.update()
 
     def paintEvent(self, event) -> None:
@@ -64,8 +137,8 @@ class VixDetailView(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(self.rect(), QColor("#141820"))
         painter.setPen(QColor("#F1F3F5"))
-        painter.setFont(QFont("PingFang SC", 18, QFont.Weight.Bold))
-        painter.drawText(24, 38, "VIX")
+        painter.setFont(QFont("PingFang SC", 16, QFont.Weight.Bold))
+        painter.drawText(16, 28, "VIX")
 
         if self.status == "loading":
             self._draw_message(painter, "正在加载 Cboe VIX 日线…")
@@ -73,20 +146,23 @@ class VixDetailView(QWidget):
         if self.status == "failure":
             self._draw_message(painter, "VIX 数据加载失败")
             painter.setPen(QColor("#9AA2AF"))
-            painter.drawText(QRectF(24, 88, self.width() - 48, 50),
+            painter.drawText(QRectF(16, 70, self.width() - 32, 70),
                              Qt.AlignmentFlag.AlignTop | Qt.TextFlag.TextWordWrap,
                              self.error)
             return
 
-        painter.setFont(QFont("PingFang SC", 22, QFont.Weight.Bold))
+        summary = self.summary
+        painter.setFont(QFont("PingFang SC", 20, QFont.Weight.Bold))
         painter.setPen(QColor("#FFB454"))
-        painter.drawText(24, 76, f"{self.latest_value:.2f}")
+        painter.drawText(16, 62, f"{summary.value:.2f}")
         painter.setFont(QFont("PingFang SC", 10))
         painter.setPen(QColor("#AAB2BF"))
-        painter.drawText(120, 70, f"观测日期  {self.observation_date}")
-        painter.drawText(120, 88, f"数据来源  {self.source}")
+        painter.drawText(92, 50, f"变化 {summary.change:+.2f}")
+        painter.drawText(92, 67, f"日期 {summary.date}")
+        painter.drawText(16, 89, f"开 {summary.open:.2f}  高 {summary.high:.2f} 低 {summary.low:.2f}")
+        painter.drawText(16, 106, f"前收 {summary.previous_close:.2f}   来源 {summary.source}")
 
-        chart = QRectF(24, 112, self.width() - 48, self.height() - 144)
+        chart = self._chart_rect()
         path = QPainterPath()
         path.addRoundedRect(chart, 8, 8)
         painter.fillPath(path, QColor("#1D2330"))
@@ -100,11 +176,23 @@ class VixDetailView(QWidget):
         ])
         painter.setPen(QPen(QColor("#FFB454"), 2))
         painter.drawPolyline(polyline)
+        if self.tooltip_visible and self._hover_index is not None:
+            i = self._hover_index
+            point = polyline[i]
+            painter.setPen(QPen(QColor("#F1F3F5"), 1))
+            painter.drawLine(QPointF(point.x(), chart.top()),
+                             QPointF(point.x(), chart.bottom()))
+            painter.setBrush(QColor("#F1F3F5"))
+            painter.drawEllipse(point, 3, 3)
+            painter.setPen(QColor("#F1F3F5"))
+            painter.drawText(QRectF(max(chart.left(), point.x() - 70), chart.top() + 4,
+                                    140, 20), Qt.AlignmentFlag.AlignCenter,
+                             self.tooltip_text)
         painter.setPen(QColor("#788191"))
-        painter.drawText(24, self.height() - 10,
+        painter.drawText(16, self.height() - 6,
                          f"最近 {len(values)} 个交易日收盘")
 
     def _draw_message(self, painter: QPainter, text: str) -> None:
-        painter.setFont(QFont("PingFang SC", 13))
+        painter.setFont(QFont("PingFang SC", 12))
         painter.setPen(QColor("#C7CDD6"))
-        painter.drawText(24, 82, text)
+        painter.drawText(16, 64, text)
