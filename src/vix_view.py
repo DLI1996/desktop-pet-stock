@@ -4,8 +4,8 @@ from __future__ import annotations
 import threading
 from typing import Callable
 
-from PySide6.QtCore import QPointF, QRectF, QTimer, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen, QPolygonF
+from PySide6.QtCore import QEvent, QPointF, QRectF, QTimer, Qt, Signal
+from PySide6.QtGui import QColor, QEnterEvent, QFont, QMouseEvent, QPainter, QPainterPath, QPen, QPolygonF
 from PySide6.QtWidgets import QWidget
 
 from .vix_provider import VIX_SOURCE, VixSummary, fetch_vix_csv, parse_vix_csv, parse_vix_summary
@@ -89,15 +89,25 @@ class VixDetailView(QWidget):
     def _chart_rect(self) -> QRectF:
         return QRectF(16, 172, self.width() - 32, self.height() - 190)
 
-    def _index_at(self, pos: QPointF) -> int | None:
+    def _point_positions(self) -> list[QPointF]:
         chart = self._chart_rect()
-        if not chart.contains(pos) or len(self.points) < 2:
-            return None
-        ratio = (pos.x() - chart.left()) / chart.width()
-        return max(0, min(len(self.points) - 1,
-                          round(ratio * (len(self.points) - 1))))
+        values = [value for _, value in self.points]
+        low, high = min(values), max(values)
+        span = high - low or 1.0
+        return [
+            QPointF(chart.left() + i * chart.width() / max(1, len(values) - 1),
+                    chart.bottom() - (value - low) * chart.height() / span)
+            for i, value in enumerate(values)
+        ]
 
-    def mouseMoveEvent(self, event) -> None:
+    def _index_at(self, pos: QPointF) -> int | None:
+        if not self._chart_rect().contains(pos) or len(self.points) < 2:
+            return None
+        index, point = min(enumerate(self._point_positions()),
+                           key=lambda item: (item[1] - pos).manhattanLength())
+        return index if (point - pos).manhattanLength() <= 10 else None
+
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
         index = self._index_at(event.position()) if self.status == "ready" else None
         self._tooltip_hide_timer.stop()
         if index is None:
@@ -110,13 +120,13 @@ class VixDetailView(QWidget):
             self._hover_timer.start()
         super().mouseMoveEvent(event)
 
-    def leaveEvent(self, event) -> None:
+    def leaveEvent(self, event: QEvent) -> None:
         self._hover_timer.stop()
         self._hover_index = None
         self._tooltip_hide_timer.start()
         super().leaveEvent(event)
 
-    def enterEvent(self, event) -> None:
+    def enterEvent(self, event: QEnterEvent) -> None:
         self.entered.emit()
         super().enterEvent(event)
 
@@ -167,13 +177,7 @@ class VixDetailView(QWidget):
         path.addRoundedRect(chart, 8, 8)
         painter.fillPath(path, QColor("#1D2330"))
         values = [value for _, value in self.points]
-        low, high = min(values), max(values)
-        span = high - low or 1.0
-        polyline = QPolygonF([
-            QPointF(chart.left() + i * chart.width() / max(1, len(values) - 1),
-                    chart.bottom() - (value - low) * chart.height() / span)
-            for i, value in enumerate(values)
-        ])
+        polyline = QPolygonF(self._point_positions())
         painter.setPen(QPen(QColor("#FFB454"), 2))
         painter.drawPolyline(polyline)
         if self.tooltip_visible and self._hover_index is not None:

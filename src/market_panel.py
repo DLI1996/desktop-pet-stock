@@ -4,8 +4,8 @@ from __future__ import annotations
 import threading
 from typing import Callable
 
-from PySide6.QtCore import QRectF, Signal, Qt
-from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath
+from PySide6.QtCore import QEvent, QRectF, Signal, Qt
+from PySide6.QtGui import QColor, QFont, QMouseEvent, QPainter, QPainterPath
 from PySide6.QtWidgets import QWidget
 
 from .vix_provider import VixSummary, fetch_vix_csv, parse_vix_summary
@@ -23,7 +23,7 @@ class MarketPanel(QWidget):
         super().__init__(parent)
         self.loader = loader
         self.market_view = "US"
-        self.screen = "list"
+        self.content_view = "list"
         self.rows = ["VIX"]
         self.active_row: str | None = None
         self.list_status = "loading"
@@ -37,16 +37,13 @@ class MarketPanel(QWidget):
         self.setMouseTracking(True)
 
     def open(self) -> None:
-        self.screen = "list"
+        self.content_view = "list"
         if self.detail:
             self.detail.hide()
         self.show()
         if self.summary is None and not self._summary_done.is_set():
             self._load_summary()
         self.update()
-
-    def close_panel(self) -> None:
-        self.hide()
 
     def _load_summary(self) -> None:
         self.list_status = "loading"
@@ -85,7 +82,7 @@ class MarketPanel(QWidget):
         painter.drawText(180, 27, "中国")
         painter.setPen(QColor("#FFB454"))
         painter.drawText(236, 27, "美国")
-        if self.screen == "detail":
+        if self.content_view == "detail":
             self._paint_detail_header(painter)
             return
 
@@ -127,9 +124,9 @@ class MarketPanel(QWidget):
         painter.setFont(QFont("PingFang SC", 11, QFont.Weight.Bold))
         painter.drawText(18, 29, "‹ 返回")
 
-    def mousePressEvent(self, event) -> None:
+    def mousePressEvent(self, event: QMouseEvent) -> None:
         pos = event.position()
-        if self.screen == "detail":
+        if self.content_view == "detail":
             if pos.y() < 45:
                 self.back_to_list()
             return
@@ -139,7 +136,7 @@ class MarketPanel(QWidget):
 
     def open_vix_detail(self) -> None:
         self.active_row = "VIX"
-        self.screen = "detail"
+        self.content_view = "detail"
         if self.detail is None:
             loader = (lambda: self._raw) if self._raw is not None else self.loader
             self.detail = VixDetailView(loader, self)
@@ -153,15 +150,15 @@ class MarketPanel(QWidget):
         self.update()
 
     def back_to_list(self) -> None:
-        self.screen = "list"
+        self.content_view = "list"
         if self.detail:
             self.detail.hide()
         self.update()
 
-    def enterEvent(self, event) -> None:
+    def enterEvent(self, event: QEvent) -> None:
         self.entered.emit()
         super().enterEvent(event)
 
-    def leaveEvent(self, event) -> None:
+    def leaveEvent(self, event: QEvent) -> None:
         self.left.emit()
         super().leaveEvent(event)

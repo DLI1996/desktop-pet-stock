@@ -8,8 +8,8 @@ import webbrowser
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer, Signal, QRectF, QPointF
-from PySide6.QtGui import (QAction, QColor, QFont, QFontMetrics, QPainter,
+from PySide6.QtCore import QEvent, Qt, QTimer, Signal, QRectF, QPointF
+from PySide6.QtGui import (QAction, QColor, QEnterEvent, QFont, QFontMetrics, QPainter,
                            QPainterPath, QPixmap, QTransform)
 from PySide6.QtWidgets import QInputDialog, QMenu, QWidget
 
@@ -148,6 +148,7 @@ class PetWindow(QWidget):
         self.market_panel = MarketPanel(parent=self)
         self.market_panel.entered.connect(self.hide_timer.stop)
         self.market_panel.left.connect(self.hide_timer.start)
+        self.market_panel.hide()
 
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self._fetch_quote)
@@ -665,7 +666,7 @@ class PetWindow(QWidget):
         self.update()
 
     def _close_market_panel(self):
-        self.market_panel.close_panel()
+        self.market_panel.hide()
         self._set_card(False)
         self._mask_key = None
         self.update()
@@ -678,7 +679,7 @@ class PetWindow(QWidget):
         self._mask_key = None
         self.update()
 
-    def enterEvent(self, event):
+    def enterEvent(self, event: QEnterEvent) -> None:
         self.hovering = True   # 悬停：进入行情形态视图 + 显示红/绿卡
         self.hide_timer.stop()
         self.hover_timer.start()
@@ -688,11 +689,10 @@ class PetWindow(QWidget):
             self._reveal_if_needed()  # 补播未展示期间的状态效果（音频/气泡/自动动作）
         super().enterEvent(event)
 
-    def leaveEvent(self, event):
+    def leaveEvent(self, event: QEvent) -> None:
         self.hovering = False  # 移开：行情卡收起，角色保持行情形态（双击才回普通状态）
         self.hover_timer.stop()
-        if self.demo_state is None:
-            self.hide_timer.start()
+        self.hide_timer.start()
         super().leaveEvent(event)
 
     def mouseDoubleClickEvent(self, event):

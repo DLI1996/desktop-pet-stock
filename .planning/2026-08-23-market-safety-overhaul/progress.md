@@ -71,6 +71,8 @@
 - Ran `to-tickets`, confirmed granularity and blocking edges one question at a time, and published issues #2–#5 with `ready-for-agent`. The first implementation target is #2 for a runnable US/VIX demo; #5 is independently ready, while #3 and #4 are blocked only by #2.
 - Implemented Issue #2 test-first: added deterministic VIX summary parsing, a US-default in-window market panel, lazy same-panel VIX detail, OHLC/source/date rendering, and 350ms/200ms tooltip/close intent.
 - Verified the issue #2 focused interaction/parser tests and the full offscreen suite; no VIX loader runs during list rendering until the panel opens, and list rendering never constructs detail series.
+- Fixed the Issue #2 review findings: explicitly hid the child panel during startup, applied the 200ms close intent in demo mode, and changed tooltip hit-testing to rendered-point radius checks with delayed dismissal.
+- Applied Standards review cleanup by renaming `MarketPanel.screen` to `content_view`, annotating Qt event overrides, and removing the pure close delegation; focused regression tests pass.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`
