@@ -73,6 +73,7 @@
 - Verified the issue #2 focused interaction/parser tests and the full offscreen suite; no VIX loader runs during list rendering until the panel opens, and list rendering never constructs detail series.
 - Fixed the Issue #2 review findings: explicitly hid the child panel during startup, applied the 200ms close intent in demo mode, and changed tooltip hit-testing to rendered-point radius checks with delayed dismissal.
 - Applied Standards review cleanup by renaming `MarketPanel.screen` to `content_view`, annotating Qt event overrides, and removing the pure close delegation; focused regression tests pass.
+- Committed Issue #2 as `433e815` plus review fixes `cda0681`. Parent verification passed 8 focused tests, all 28 offscreen tests, `compileall`, and `git diff --check`; the working tree was clean and the macOS demo was launched for user validation.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`
@@ -116,6 +117,8 @@
 | Phase 11 full verification after hover fix | Offscreen suite | 23 passing | pass |
 | Phase 11 China quote repro | Default production provider returns a quote | `接口返回空数据` twice | expected red |
 | Phase 11 explicit China quote connection | Opted-in provider returns `sh000001` | `3912.52`, `+0.59%`, Sina source | pass |
+| Issue #2 focused verification | VIX parser, Market panel, hover smoke | 8 passing | pass |
+| Issue #2 full verification | Offscreen suite, compilation, diff check | 28 passing; compilation and diff check passed | pass |
 
 ## Error Log
 | Error | Resolution |
@@ -137,8 +140,8 @@
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 11 specification is published as GitHub issue #1. |
-| Where am I going? | Implement issue #2 for the first demo, then work the remaining ready frontier while Phase 10 governance decisions remain separate. |
+| Where am I? | Issue #2 is implemented, reviewed, committed, and running for demo validation. |
+| Where am I going? | After Issue #2 acceptance, close it and implement the next ready ticket while Phase 10 governance decisions remain separate. |
 | What's the goal? | Add the China / US Market panel and VIX alert without changing the existing watched-instrument reaction model. |
 | What have I learned? | See `findings.md`. |
 | What have I done? | Created the plan and preserved the first red loop. |
