@@ -66,6 +66,44 @@ class TestMarketPanel(unittest.TestCase):
         self.assertEqual(window.market_panel.active_row, "VIX")
         window.close()
 
+    def test_china_switch_opens_instrument_catalog(self):
+        window = PetWindow(Path(__file__).parent.parent, DEFAULT_CONFIG.copy())
+        window.refresh_timer.stop()
+        window.market_panel.show()
+        self.app.processEvents()
+
+        click = QMouseEvent(
+            QEvent.Type.MouseButtonPress, QPointF(190, 27),
+            Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier)
+        QApplication.sendEvent(window.market_panel, click)
+
+        self.assertEqual(window.market_panel.market_view, "CN")
+        self.assertGreater(len(window.market_panel.rows), 0)
+        self.assertIn("上证指数", window.market_panel.rows)
+        window.close()
+
+    def test_china_row_selects_watched_instrument_and_exits_demo(self):
+        window = PetWindow(Path(__file__).parent.parent, DEFAULT_CONFIG.copy())
+        window.refresh_timer.stop()
+        window._enter_demo(MarketState.SURGE)
+        window._fetch_quote = lambda: None
+        window.market_panel.show()
+        window.market_panel._set_market_view("CN")
+        self.app.processEvents()
+
+        click = QMouseEvent(
+            QEvent.Type.MouseButtonPress, QPointF(190, 64 + 36),
+            Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier)
+        QApplication.sendEvent(window.market_panel, click)
+
+        self.assertEqual(window.cfg["symbol"], "sz399001")
+        self.assertEqual(window.cfg["display_name"], "深证成指")
+        self.assertIsNone(window.demo_state)
+        self.assertTrue(window._stock_selected)
+        window.close()
+
     def test_panel_stays_hidden_until_hover_intent(self):
         window = PetWindow(Path(__file__).parent.parent, DEFAULT_CONFIG.copy())
         window.refresh_timer.stop()

@@ -12,11 +12,23 @@ from .vix_provider import VixSummary, fetch_vix_csv, parse_vix_summary
 from .vix_view import VixDetailView
 
 
+INDEX_PRESETS = [
+    ("上证指数", "sh000001"),
+    ("深证成指", "sz399001"),
+    ("创业板指", "sz399006"),
+    ("沪深300", "sh000300"),
+    ("科创50", "sh000688"),
+    ("中证500", "sh000905"),
+    ("博腾股份", "sz300363"),
+]
+
+
 class MarketPanel(QWidget):
-    """A single US list/detail surface shown beside the pet."""
+    """A single China/US list/detail surface shown beside the pet."""
 
     entered = Signal()
     left = Signal()
+    symbol_selected = Signal(str, str)
 
     def __init__(self, loader: Callable[[], bytes] = fetch_vix_csv,
                  parent: QWidget | None = None) -> None:
@@ -25,6 +37,7 @@ class MarketPanel(QWidget):
         self.market_view = "US"
         self.content_view = "list"
         self.rows = ["VIX"]
+        self.china_rows = INDEX_PRESETS
         self.active_row: str | None = None
         self.list_status = "loading"
         self.error = ""
@@ -78,9 +91,9 @@ class MarketPanel(QWidget):
         painter.setFont(QFont("PingFang SC", 14, QFont.Weight.Bold))
         painter.drawText(18, 28, "Market")
         painter.setFont(QFont("PingFang SC", 10, QFont.Weight.Bold))
-        painter.setPen(QColor("#8F98A8"))
+        painter.setPen(QColor("#FFB454" if self.market_view == "CN" else "#8F98A8"))
         painter.drawText(180, 27, "中国")
-        painter.setPen(QColor("#FFB454"))
+        painter.setPen(QColor("#FFB454" if self.market_view == "US" else "#8F98A8"))
         painter.drawText(236, 27, "美国")
         if self.content_view == "detail":
             self._paint_detail_header(painter)
@@ -88,7 +101,19 @@ class MarketPanel(QWidget):
 
         painter.setFont(QFont("PingFang SC", 10))
         painter.setPen(QColor("#8F98A8"))
-        painter.drawText(18, 50, "美国市场")
+        painter.drawText(18, 50, "中国市场" if self.market_view == "CN" else "美国市场")
+        if self.market_view == "CN":
+            for index, (name, _) in enumerate(self.china_rows):
+                y = 64 + index * 36
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(QColor("#2C3442" if self.active_row == name else "#202631"))
+                painter.drawRoundedRect(QRectF(12, y, 336, 32), 7, 7)
+                painter.setPen(QColor("#F4F5F7"))
+                painter.setFont(QFont("PingFang SC", 11))
+                painter.drawText(28, y + 21, name)
+            painter.setPen(QColor("#697384"))
+            painter.drawText(18, 322, "＋ 添加指标")
+            return
         if self.list_status == "loading":
             for y in (78, 104):
                 painter.setPen(Qt.PenStyle.NoPen)
@@ -124,11 +149,40 @@ class MarketPanel(QWidget):
         painter.setFont(QFont("PingFang SC", 11, QFont.Weight.Bold))
         painter.drawText(18, 29, "‹ 返回")
 
+    def _set_market_view(self, market_view: str) -> None:
+        self.market_view = market_view
+        self.content_view = "list"
+        self.active_row = None
+        if self.detail:
+            self.detail.hide()
+        if market_view == "CN":
+            self.rows = [name for name, _ in self.china_rows]
+            self.list_status = "ready"
+        else:
+            self.rows = ["VIX"]
+            self.list_status = "loading" if self.summary is None else "ready"
+        self.update()
+
     def mousePressEvent(self, event: QMouseEvent) -> None:
         pos = event.position()
+        if QRectF(156, 8, 72, 32).contains(pos):
+            self._set_market_view("CN")
+            return
+        if QRectF(228, 8, 72, 32).contains(pos):
+            self._set_market_view("US")
+            return
         if self.content_view == "detail":
             if pos.y() < 45:
                 self.back_to_list()
+            return
+        if self.market_view == "CN":
+            for index, (name, symbol) in enumerate(self.china_rows):
+                row = QRectF(12, 64 + index * 36, 336, 32)
+                if row.contains(pos):
+                    self.active_row = name
+                    self.symbol_selected.emit(symbol, name)
+                    self.update()
+                    return
             return
         if self.list_status == "ready" and QRectF(12, 64, 336, 58).contains(pos):
             self.open_vix_detail()

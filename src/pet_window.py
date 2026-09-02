@@ -16,7 +16,7 @@ from PySide6.QtWidgets import QInputDialog, QMenu, QWidget
 from .animation_controller import AnimationController
 from .audio_controller import AudioController
 from .bubble import BubbleController
-from .market_panel import MarketPanel
+from .market_panel import INDEX_PRESETS, MarketPanel
 from .quote_provider import StockDataProvider, is_market_open, validate_symbol
 from .state_machine import MarketState, StateMachine
 
@@ -56,18 +56,6 @@ DEMO_VALUES = {
     MarketState.SURGE: 5.80,
     MarketState.FALL: -2.40,
 }
-
-# 快捷指数标的（右键菜单）
-INDEX_PRESETS = [
-    ("上证指数", "sh000001"),
-    ("深证成指", "sz399001"),
-    ("创业板指", "sz399006"),
-    ("沪深300", "sh000300"),
-    ("科创50", "sh000688"),
-    ("中证500", "sh000905"),
-    ("博腾股份", "sz300363"),  # 今日 +20% 涨停的爆拉标的
-]
-
 
 class PetWindow(QWidget):
     quoteReady = Signal(object)  # 后台线程 -> 主线程
@@ -148,6 +136,7 @@ class PetWindow(QWidget):
         self.market_panel = MarketPanel(parent=self)
         self.market_panel.entered.connect(self.hide_timer.stop)
         self.market_panel.left.connect(self.hide_timer.start)
+        self.market_panel.symbol_selected.connect(self._change_symbol)
         self.market_panel.hide()
 
         self.refresh_timer = QTimer(self)
@@ -812,6 +801,7 @@ class PetWindow(QWidget):
             name = ""
         self.cfg["symbol"] = sym
         self.cfg["display_name"] = name
+        self.demo_state = None
         self.sm = StateMachine(
             rise=float(self.cfg["rise_threshold"]),
             surge=float(self.cfg["surge_threshold"]),
