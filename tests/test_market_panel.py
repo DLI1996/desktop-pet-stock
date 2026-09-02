@@ -104,6 +104,25 @@ class TestMarketPanel(unittest.TestCase):
         self.assertTrue(window._stock_selected)
         window.close()
 
+    def test_china_row_opens_same_panel_detail(self):
+        window = PetWindow(Path(__file__).parent.parent, DEFAULT_CONFIG.copy())
+        window.refresh_timer.stop()
+        window._fetch_quote = lambda: None
+        window.market_panel.show()
+        window.market_panel._set_market_view("CN")
+        self.app.processEvents()
+
+        click = QMouseEvent(
+            QEvent.Type.MouseButtonPress, QPointF(190, 80),
+            Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier)
+        QApplication.sendEvent(window.market_panel, click)
+
+        self.assertEqual(window.market_panel.market_view, "CN")
+        self.assertEqual(window.market_panel.active_row, "上证指数")
+        self.assertEqual(window.market_panel.content_view, "detail")
+        window.close()
+
     def test_panel_stays_hidden_until_hover_intent(self):
         window = PetWindow(Path(__file__).parent.parent, DEFAULT_CONFIG.copy())
         window.refresh_timer.stop()

@@ -97,6 +97,8 @@ class MarketPanel(QWidget):
         painter.drawText(236, 27, "美国")
         if self.content_view == "detail":
             self._paint_detail_header(painter)
+            if self.market_view == "CN":
+                self._paint_china_detail(painter)
             return
 
         painter.setFont(QFont("PingFang SC", 10))
@@ -149,6 +151,16 @@ class MarketPanel(QWidget):
         painter.setFont(QFont("PingFang SC", 11, QFont.Weight.Bold))
         painter.drawText(18, 29, "‹ 返回")
 
+    def _paint_china_detail(self, painter: QPainter) -> None:
+        painter.setPen(QColor("#F4F5F7"))
+        painter.setFont(QFont("PingFang SC", 16, QFont.Weight.Bold))
+        painter.drawText(18, 78, self.active_row or "中国行情")
+        painter.setPen(QColor("#9BA4B2"))
+        painter.setFont(QFont("PingFang SC", 10))
+        painter.drawText(18, 108, "行情刷新中…")
+        painter.setPen(QColor("#697384"))
+        painter.drawText(18, 138, "历史数据暂不可用")
+
     def _set_market_view(self, market_view: str) -> None:
         self.market_view = market_view
         self.content_view = "list"
@@ -180,6 +192,7 @@ class MarketPanel(QWidget):
                 row = QRectF(12, 64 + index * 36, 336, 32)
                 if row.contains(pos):
                     self.active_row = name
+                    self.content_view = "detail"
                     self.symbol_selected.emit(symbol, name)
                     self.update()
                     return
