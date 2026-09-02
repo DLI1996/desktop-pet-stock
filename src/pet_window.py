@@ -273,6 +273,7 @@ class PetWindow(QWidget):
 
     def _on_quote(self, result):
         self._set_refresh_interval()
+        self.market_panel.set_china_quote(result)
         if not result.ok:
             self.net_error = True
             log.warning("行情获取失败: %s", result.error)

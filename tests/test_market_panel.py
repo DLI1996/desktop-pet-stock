@@ -6,11 +6,12 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import QEvent, QPointF, Qt
-from PySide6.QtGui import QEnterEvent, QMouseEvent
+from PySide6.QtGui import QEnterEvent, QImage, QMouseEvent
 from PySide6.QtWidgets import QApplication
 
 from app import DEFAULT_CONFIG
 from src.pet_window import PetWindow
+from src.quote_provider import QuoteResult
 from src.state_machine import MarketState
 from src.vix_view import VixDetailView
 
@@ -121,6 +122,47 @@ class TestMarketPanel(unittest.TestCase):
         self.assertEqual(window.market_panel.market_view, "CN")
         self.assertEqual(window.market_panel.active_row, "上证指数")
         self.assertEqual(window.market_panel.content_view, "detail")
+        window.close()
+
+    def test_china_detail_updates_when_quote_arrives(self):
+        window = PetWindow(Path(__file__).parent.parent, DEFAULT_CONFIG.copy())
+        window.refresh_timer.stop()
+        window._fetch_quote = lambda: None
+        panel = window.market_panel
+        panel.show()
+        panel._set_market_view("CN")
+        self.app.processEvents()
+
+        click = QMouseEvent(
+            QEvent.Type.MouseButtonPress, QPointF(190, 80),
+            Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier)
+        QApplication.sendEvent(panel, click)
+
+        def snapshot():
+            image = QImage(panel.size(), QImage.Format.Format_ARGB32)
+            image.fill(Qt.GlobalColor.transparent)
+            panel.render(image)
+            return bytes(image.bits())
+
+        loading = snapshot()
+        window.quoteReady.emit(QuoteResult(
+            symbol="sh000001", name="上证指数", price=3875.21,
+            change=12.34, change_percent=0.32,
+            timestamp="2026-09-01 15:00:00", source="fixture", ok=True))
+        self.app.processEvents()
+
+        ready = snapshot()
+        self.assertFalse(ready == loading)
+
+        window.quoteReady.emit(QuoteResult(
+            symbol="sh000001", name="上证指数", price=3875.21,
+            change=12.34, change_percent=0.32,
+            timestamp="2026-09-01 15:00:00", source="fixture", ok=True,
+            raw={"open": 3820.10, "high": 3890.20, "low": 3801.30}))
+        self.app.processEvents()
+
+        self.assertFalse(snapshot() == ready)
         window.close()
 
     def test_panel_stays_hidden_until_hover_intent(self):
