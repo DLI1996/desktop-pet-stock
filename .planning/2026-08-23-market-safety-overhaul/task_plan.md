@@ -4,7 +4,7 @@
 Make desktop-pet-stock safer and more correct by fixing exchange-time handling, requiring opt-in for desktop side effects, rejecting unsafe quote data, locking dependencies reproducibly, and reducing the remaining operational risks.
 
 ## Next Step
-Let the user validate the running Issue #2 demo; once accepted, close #2 and implement the next frontier ticket (#3, #4, or #5).
+In a new session opened on this exact worktree, verify branch `codex/issue-2-us-vix-market-panel` contains implementation commit `fae2b7b`, relaunch the Issue #2 demo if needed, and collect user acceptance. Only then close #2 and implement the next frontier ticket (#3, #4, or #5).
 
 ## Current Phase
 Phase 11

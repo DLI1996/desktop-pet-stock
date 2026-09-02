@@ -74,6 +74,7 @@
 - Fixed the Issue #2 review findings: explicitly hid the child panel during startup, applied the 200ms close intent in demo mode, and changed tooltip hit-testing to rendered-point radius checks with delayed dismissal.
 - Applied Standards review cleanup by renaming `MarketPanel.screen` to `content_view`, annotating Qt event overrides, and removing the pure close delegation; focused regression tests pass.
 - Committed Issue #2 as `433e815` plus review fixes `cda0681`. Parent verification passed 8 focused tests, all 28 offscreen tests, `compileall`, and `git diff --check`; the working tree was clean and the macOS demo was launched for user validation.
+- Session handoff (2026-09-01): continue only from `/Users/donaldli/.codex/worktrees/d4c2/desktop-pet-stock`, branch `codex/issue-2-us-vix-market-panel`, containing implementation commit `fae2b7b`. Issue #2 remains open pending manual demo acceptance and has not been pushed; do not use the stale main checkout at `/Users/donaldli/projects/desktop-pet-stock`. In the new session, read Issue #2 and these planning files first, confirm the branch/status, relaunch the demo if needed, then close #2 only after acceptance. Issues #3 and #4 become available after #2; #5 is independently ready.
 
 ### Files Created/Modified
 - `.planning/2026-08-23-market-safety-overhaul/task_plan.md`
