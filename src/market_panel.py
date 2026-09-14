@@ -91,9 +91,10 @@ class MarketPanel(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(self.rect(), QColor("#161A22"))
-        painter.setPen(QColor("#F4F5F7"))
-        painter.setFont(QFont("PingFang SC", 14, QFont.Weight.Bold))
-        painter.drawText(18, 28, "Market")
+        if self.content_view != "detail":
+            painter.setPen(QColor("#F4F5F7"))
+            painter.setFont(QFont("PingFang SC", 14, QFont.Weight.Bold))
+            painter.drawText(18, 28, "Market")
         painter.setFont(QFont("PingFang SC", 10, QFont.Weight.Bold))
         painter.setPen(QColor("#FFB454" if self.market_view == "CN" else "#8F98A8"))
         painter.drawText(180, 27, "中国")
